@@ -1,0 +1,26 @@
+# YOPA Configuration
+
+# optional configuration: the default values below are used if missing
+region: yopa-local
+host: localhost
+sqsPort: 47195
+snsPort: 47196
+
+messaging:
+  # creates a topic with an SQS and an HTTP subscription 
+  - sns://test-topic-with-subscriptions:
+
+    # creates and subscribes a queue, with standard delivery
+    - sqs://test-subscribed-queue-standard
+
+    # creates and subscribes a queue, with raw delivery
+    - { endpoint: "sqs://test-subscribed-queue-raw", rawDelivery: true }
+
+    # subscribes an HTTP endpoint, with standard delivery
+    - http://requestb.in/11195ay1
+
+  # creates a topic without subscription: messages sent to it will be logged and discarded 
+  - sns://test-topic-without-subscription
+
+  # creates a queue, not subscribed to any topic
+  - sqs://test-standalone-queue
