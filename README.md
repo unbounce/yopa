@@ -26,7 +26,7 @@ Run the integration tests:
 
 Run with the example config:
 
-    lein run --config yopa-config-example.yml
+    lein trampoline run --config yopa-config-example.yml
 
 
 ## Usage
