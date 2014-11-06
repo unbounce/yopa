@@ -250,9 +250,9 @@
 (defn- make-server [host port]
   (jetty/run-jetty app { :join? false :host host :port port }))
 
-(defn start [host port]
-  (reset! server (make-server host port))
-  (log/info (format "Active SNS endpoint: http://%s:%d" host port)))
+(defn start [host bind-address port]
+  (reset! server (make-server bind-address port))
+  (log/info (format "Active SNS endpoint: http://%s:%d" bind-address port)))
 
 (defn stop []
   (when @server

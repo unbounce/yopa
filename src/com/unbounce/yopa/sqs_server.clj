@@ -7,18 +7,18 @@
 
 (def ^:dynamic server (atom nil))
 
-(defn- make-server [host port]
+(defn- make-server [host bind-address port]
   (let [address (NodeAddress. "http", host, port, "")]
   (-> (SQSRestServerBuilder/withPort port)
-    (.withInterface host)
+    (.withInterface bind-address)
     (.withPort port)
-    ;(.withServerAddress address)
+    (.withServerAddress address)
     (.start))))
 
-(defn start [host port]
-  (reset! server (make-server host port))
+(defn start [host bind-address port]
+  (reset! server (make-server host bind-address port))
   (.waitUntilStarted @server)
-  (log/info (format "Active SQS endpoint: http://%s:%d" host port)))
+  (log/info (format "Active SQS endpoint: http://%s:%d" bind-address port)))
 
 (defn stop []
   (when @server

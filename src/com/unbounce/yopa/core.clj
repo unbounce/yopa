@@ -60,10 +60,10 @@
   (println))
 
 (defn- start [servers-config]
-  (let [{:keys [host sqs-port sns-port]} servers-config]
+  (let [{:keys [host bind-address sqs-port sns-port]} servers-config]
     (log/info "Starting up...")
-    (sqs-server/start host sqs-port)
-    (sns-server/start host sns-port)
+    (sqs-server/start host bind-address sqs-port)
+    (sns-server/start host bind-address sns-port)
     (output-setup (config/setup))))
 
 (defn stop []

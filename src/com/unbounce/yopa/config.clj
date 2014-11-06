@@ -99,7 +99,7 @@
     (reset! region region*)
     (generate-regions-override output-file region* host sqs-port sns-port)
     (init-messaging messaging-config)
-    {:region @region :host bind-address :sqs-port sqs-port :sns-port sns-port}))
+    {:region @region :host host :bind-address bind-address :sqs-port sqs-port :sns-port sns-port}))
 
 ; create and configure AWS entities
 
