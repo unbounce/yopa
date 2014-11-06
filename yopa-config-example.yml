@@ -3,6 +3,7 @@
 # optional configuration: the default values below are used if missing
 region: yopa-local
 host: localhost
+bindAddress: 0.0.0.0
 sqsPort: 47195
 snsPort: 47196
 

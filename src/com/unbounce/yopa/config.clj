@@ -92,13 +92,14 @@
   (let [config (yaml/parse-string (slurp config-file))
         region* (get-in config [:region] "yopa-local")
         host (get-in config [:host] "localhost")
+        bind-address (get-in config [:bindAddress] "0.0.0.0")
         sqs-port (get-in config [:sqsPort] 47195)
         sns-port (get-in config [:snsPort] 47196)
         messaging-config (get-in config [:messaging] [])]
     (reset! region region*)
     (generate-regions-override output-file region* host sqs-port sns-port)
     (init-messaging messaging-config)
-    {:region @region :host host :sqs-port sqs-port :sns-port sns-port}))
+    {:region @region :host bind-address :sqs-port sqs-port :sns-port sns-port}))
 
 ; create and configure AWS entities
 

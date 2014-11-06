@@ -10,7 +10,9 @@
 (defn- make-server [host port]
   (let [address (NodeAddress. "http", host, port, "")]
   (-> (SQSRestServerBuilder/withPort port)
-    (.withServerAddress address)
+    (.withInterface host)
+    (.withPort port)
+    ;(.withServerAddress address)
     (.start))))
 
 (defn start [host port]
