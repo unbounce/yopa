@@ -14,6 +14,7 @@
 (defonce ^:const xml-ns "http://sns.amazonaws.com/doc/2010-03-31/")
 (defonce ^:const subscription-protocols #{"http" "https" "sqs"})
 (defonce ^:const subscription-schemes #{"http" "https" "arn"})
+(defonce ^:const http-timeout-millis 5000)
 
 (def ^:dynamic server (atom nil))
 (def ^:dynamic topics (atom {}))
@@ -158,12 +159,18 @@
 ;; Publish
 
 (defn- route-with-http [message message-id uri]
-  (let [res (http/post uri
-                       {:headers {:Content-Type "application/json"}
-                        :body message
-                        :throw-exceptions false})]
-    (log/info
-      (format "Received status code: %s when routing SNS message ID: %s to: %s" (:status res) message-id uri))))
+  (try
+    (let [res (http/post uri
+                         {:headers {:Content-Type "application/json"}
+                          :body message
+                          :throw-exceptions true
+                          :socket-timeout http-timeout-millis
+                          :conn-timeout http-timeout-millis})]
+      (log/info
+        (format "Received status code: %s when routing SNS message ID: %s to: %s" (:status res) message-id uri)))
+    (catch Throwable t
+      (log/error
+        (format "Caught exception: %s when routing SNS message ID: %s to: %s" (.getMessage t) message-id uri)))))
 
 (defn- route-with-sqs [message message-id queue-arn]
   (let [res (aws/send-sqs-message queue-arn message)]
