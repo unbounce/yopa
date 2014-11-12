@@ -36,6 +36,11 @@ Run `lein run` to get help.
 The following examples assume all the default configuration parameters are used.
 
 
+### AWS CLI
+
+    aws --endpoint-url http://localhost:47196 sns list-topics
+
+
 ### Ruby
 
     AWS.config(:access_key_id => 'x',
