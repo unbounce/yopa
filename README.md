@@ -11,6 +11,8 @@ _YOPA is Your Own Personal AWS_
 
 It allows developers to code without being connected to the net.
 
+[![Clojars Project](http://clojars.org/com.unbounce/yopa/latest-version.svg)](http://clojars.org/com.unbounce/yopa)
+
 # Features
 
 - Full-fledged SQS implementation (courtesy of https://github.com/adamw/elasticmq).
