@@ -1,7 +1,7 @@
 (def aws-sdk-version "1.9.3")
 (def ring-version "1.3.1")
 
-(defproject yopa "1.0.0-SNAPSHOT"
+(defproject com.unbounce/yopa "1.0.0-SNAPSHOT"
   :description "YOPA is Your Own Personal Aws"
   :url "https://www.github.com/unbounce/yopa"
   :license {:name "The MIT License (MIT)"
