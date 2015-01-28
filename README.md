@@ -18,6 +18,7 @@ It allows developers to code without being connected to the net.
 - Full-fledged SQS implementation (courtesy of https://github.com/adamw/elasticmq).
 - SNS stub with support for pre-defined (raw or wrapped) SQS, HTTP and HTTPS subscriptions.
   Note that the SNS stub does not confirm HTTP/S subscriptions nor retry HTTP/S failed deliveries.
+- EC2 Metadata service.
 
 
 ## Build and run
@@ -78,3 +79,6 @@ or derive the endpoint from the region:
     AmazonSNS snsClient = new AmazonSNSClient(awsCredentials);
     snsClient.setEndpoint("http://" + region.getServiceEndpoint("sns"));
 
+To use the EC2 Metadata service, set the SDK overriding property to point to Yopa's SNS port, using the `/ec2-metadata` path:
+
+    System.setProperty(SDKGlobalConfiguration.EC2_METADATA_SERVICE_OVERRIDE_SYSTEM_PROPERTY, "http://0.0.0.0:47196/ec2-metadata");
