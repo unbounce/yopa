@@ -1,6 +1,6 @@
 (ns com.unbounce.yopa.core
   (:require [com.unbounce.yopa.sqs-server :as sqs-server]
-            [com.unbounce.yopa.sns-server :as sns-server]
+            [com.unbounce.yopa.http-server :as http-server]
             [com.unbounce.yopa.config :as config]
             [com.unbounce.yopa.aws-client :as aws]
             [clojure.java.io :as io]
@@ -63,12 +63,12 @@
   (let [{:keys [host bind-address sqs-port sns-port]} servers-config]
     (log/info "Starting up...")
     (sqs-server/start host bind-address sqs-port)
-    (sns-server/start host bind-address sns-port)
+    (http-server/start host bind-address sns-port)
     (output-setup (config/setup))))
 
 (defn stop []
   (log/info "Shutting down...")
-  (sns-server/stop)
+  (http-server/stop)
   (sqs-server/stop)
   (log/info "Bye!"))
 

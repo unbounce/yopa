@@ -6,7 +6,8 @@
             [amazonica.aws.sqs :as sqs]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [clojure.test :refer [deftest is are use-fixtures]])
+            [clojure.test :refer [deftest is are use-fixtures]]
+            [clj-http.client :as http])
   (:import com.amazonaws.AmazonServiceException))
 
 (defn- with-yopa [f]
@@ -91,3 +92,7 @@
                                    :subject "test subject"
                                    :message "test message"))]
     (is (some? message-id))))
+
+(deftest request-logger
+  (let [response (http/get "http://localhost:47196/request-logger")]
+    (is (= 200 (:status response)))))

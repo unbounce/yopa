@@ -1,6 +1,5 @@
 (ns com.unbounce.yopa.sns-server
-  (:require [ring.adapter.jetty :as jetty]
-            [ring.middleware.params :as params]
+  (:require [ring.middleware.params :as params]
             [clojure.string :as str]
             [clojure.data.json :as json]
             [clj-http.client :as http]
@@ -16,7 +15,6 @@
 (defonce ^:const subscription-schemes #{"http" "https" "arn"})
 (defonce ^:const http-timeout-millis 5000)
 
-(def ^:dynamic server (atom nil))
 (def ^:dynamic topics (atom {}))
 (def ^:dynamic subscriptions (atom {}))
 (def ^:dynamic *action* "n/a")
@@ -238,7 +236,7 @@
       "Publish" (handle-publish request)
       (handle-unsupported-request request))))
 
-(defn standard-errors [handler]
+(defn- standard-errors [handler]
   (fn [request]
     (try
       (handler request)
@@ -253,15 +251,3 @@
   (-> handler
     (standard-errors)
     (params/wrap-params)))
-
-(defn- make-server [host port]
-  (jetty/run-jetty app { :join? false :host host :port port }))
-
-(defn start [host bind-address port]
-  (reset! server (make-server bind-address port))
-  (log/info (format "Active SNS endpoint: http://%s:%d" bind-address port)))
-
-(defn stop []
-  (when @server
-    (.stop @server)
-    (reset! server nil)))

@@ -5,7 +5,7 @@
   (:import org.elasticmq.rest.sqs.SQSRestServerBuilder
            org.elasticmq.NodeAddress))
 
-(def ^:dynamic server (atom nil))
+(def ^:private ^:dynamic server (atom nil))
 
 (defn- make-server [host bind-address port]
   (let [address (NodeAddress. "http", host, port, "")]

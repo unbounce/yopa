@@ -18,7 +18,7 @@ messaging:
     - { endpoint: "sqs://test-subscribed-queue-raw", rawDelivery: true }
 
     # subscribes an HTTP endpoint, with standard delivery
-    - http://requestb.in/11195ay1
+    - http://localhost:47196/request-logger
 
   # creates a topic without subscription: messages sent to it will be logged and discarded 
   - sns://test-topic-without-subscription

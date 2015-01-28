@@ -1,5 +1,5 @@
-(def aws-sdk-version "1.9.3")
-(def ring-version "1.3.1")
+(def aws-sdk-version "1.9.17")
+(def ring-version "1.3.2")
 
 (defproject com.unbounce/yopa "1.0.0-SNAPSHOT"
   :description "YOPA is Your Own Personal Aws"
@@ -19,12 +19,16 @@
    [org.clojure/data.xml "0.0.8"]
    [org.clojure/data.json "0.2.5"]
    [org.clojure/tools.cli "0.3.1"]
-   [nl.onlinetouch/clj-yaml "0.5.0"]
+   [circleci/clj-yaml "0.5.3"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.2"]
-   [amazonica "0.2.29" :exclusions [joda-time com.amazonaws]]
+   [amazonica "0.3.13" :exclusions [com.amazonaws/aws-java-sdk
+                                    com.amazonaws/amazon-kinesis-client
+                                    joda-time
+                                    org.apache.httpcomponents/httpclient]]
    [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
+   [com.amazonaws/aws-java-sdk-s3  ~aws-sdk-version :exclusions [joda-time]]
 
    [clj-http "1.0.1"]
    [ring/ring-core ~ring-version]
