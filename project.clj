@@ -6,7 +6,7 @@
   :url "https://www.github.com/unbounce/yopa"
   :license {:name "The MIT License (MIT)"
             :url "http://opensource.org/licenses/MIT"
-            :comments "Copyright (c) 2014 Unbounce Marketing Solutions Inc."}
+            :comments "Copyright (c) 2014-2015 Unbounce Marketing Solutions Inc."}
 
   :main com.unbounce.yopa.core
   :aot [com.unbounce.yopa.core]
@@ -19,7 +19,9 @@
    [org.clojure/data.xml "0.0.8"]
    [org.clojure/data.json "0.2.5"]
    [org.clojure/tools.cli "0.3.1"]
+
    [circleci/clj-yaml "0.5.3"]
+   [de.ubercode.clostache/clostache "1.4.0"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.2"]
    [amazonica "0.3.13" :exclusions [com.amazonaws/aws-java-sdk

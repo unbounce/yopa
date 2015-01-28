@@ -1,0 +1,61 @@
+{
+  "latest": {
+    "meta-data": {
+      "ami-id": "ami-4aface7a",
+      "ami-launch-index": 0,
+      "ami-manifest-path": "(unknown)",
+      "hostname": "{{hostname}}",
+      "instance-action": "none",
+      "instance-id": "i-12fake34",
+      "instance-type": "f1.fake",
+      "kernel-id": "aki-fake1234",
+      "local-hostname": "{{hostname}}",
+      "local-ipv4": "127.0.0.1",
+      "mac": "00:11:22:33:FA:CE",
+      "profile": "default-paravirtual",
+      "hostname": "{{hostname}}",
+      "public-ipv4": "127.0.0.1",
+      "reservation-id": "r-46face74",
+      "security-groups": "{{region}}-security-group",
+      "block-device-mapping": {
+        "ami": "/dev/sda1",
+        "ephemeral0": "sdb",
+        "root": "/dev/sda1"
+      },
+      "iam": {
+        "info": "{ \"Code\": \"Success\", \"LastUpdated\": \"2013-03-20T16:32:10Z\", \"InstanceProfileArn\": \"arn:aws:iam::012345678901:instance-profile/fake-role-name\", \"InstanceProfileId\": \"FAKEFAKEFAKEFAKEFAKEF\" }" ,
+        "security-credentials": {
+          "fake-role-name": "{ \"Code\": \"Success\", \"LastUpdated\": \"2013-03-20T16:33:14Z\", \"Type\": \"AWS-HMAC\", \"AccessKeyId\": \"FAKEFAKEFAKEFAKEFAKE\", \"SecretAccessKey\": \"fakefakefakefakefakefakefakefakefakefake\", \"Token\": \"fakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefak=\", \"Expiration\": \"2013-03-20T23:05:13Z\" }"
+        }
+      },
+      "placement": {
+        "availability-zone": "{{region}}-1a"
+      },
+      "public-keys": {
+        "0=fake@example.com": "http error 404"
+      },
+      "network": {
+        "interfaces": {
+          "macs": {
+            "22:00:0a:f4:2f:77": {
+              "device-number": 0,
+              "local-hostname": "ip-127-0-0-1.us-fake-2.compute.internal",
+              "local-ipv4s": "127.0.0.1",
+              "mac": "00:11:22:33:FA:CE",
+              "owner-id": "012345678901",
+              "hostname": "{{hostname}}",
+              "public-ipv4s": "127.0.0.1"
+            }
+          }
+        }
+      }
+    },
+    "dynamic": {
+      "instance-identity": {
+        "pkcs7": "fake-pkcs7",
+        "signature": "fake-signature",
+        "document": "{\"instanceId\":\"i-12fake34\",\"billingProducts\":null,\"version\":\"2010-08-31\",\"imageId\":\"ami-4afake7a\",\"accountId\":\"012345678901\",\"instanceType\":\"f1.fake\",\"kernelId\":\"aki-fake1234\",\"ramdiskId\":null,\"architecture\":\"x86_64\",\"pendingTime\":\"2013-03-12T18:19:12Z\",\"availabilityZone\":\"{{region}}-1a\",\"devpayProductCodes\":null,\"privateIp\":\"127.0.0.1\",\"region\":\"{{region}}\"}"
+      }
+    }
+  }
+}

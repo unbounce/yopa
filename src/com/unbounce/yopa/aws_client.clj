@@ -2,10 +2,15 @@
   (:require [amazonica.core :as aws]
             [amazonica.aws.sqs :as sqs]
             [amazonica.aws.sns :as sns]
+            [com.unbounce.yopa.ec2-metadata-server :as ec2-metadata-server]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import  com.amazonaws.SDKGlobalConfiguration
+            com.amazonaws.internal.EC2MetadataClient))
 
-(def ^:dynamic config (atom nil))
+(def ^:private ^:dynamic config (atom nil))
+
+(def ^:private ^:dynamic ec2-metadata-service (atom nil))
 
 (defn make-arn [service name]
   (let [region (:region @config)]
@@ -66,5 +71,16 @@
     (run-on-sqs
       #(sqs/send-message queue-url message))))
 
+(defn read-ec2-metadata-resource [path]
+  (.readResource @ec2-metadata-service path))
+
+(defn- init-ec2-metadata-service! []
+  (let [{:keys [host sns-port]} @config]
+    (System/setProperty
+      SDKGlobalConfiguration/EC2_METADATA_SERVICE_OVERRIDE_SYSTEM_PROPERTY
+      (str "http://" host ":" sns-port ec2-metadata-server/http-base-path))
+    (reset! ec2-metadata-service (EC2MetadataClient.))))
+
 (defn init [servers-config]
-  (reset! config servers-config))
+  (reset! config servers-config)
+  (init-ec2-metadata-service!))

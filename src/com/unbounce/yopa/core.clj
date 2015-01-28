@@ -2,6 +2,7 @@
   (:require [com.unbounce.yopa.sqs-server :as sqs-server]
             [com.unbounce.yopa.http-server :as http-server]
             [com.unbounce.yopa.config :as config]
+            [com.unbounce.yopa.ec2-metadata-server :as ec2-metadata-server]
             [com.unbounce.yopa.aws-client :as aws]
             [clojure.java.io :as io]
             [clojure.string :as string]
@@ -75,6 +76,7 @@
 (defn init-and-start [config-file output-file]
   (let [servers-config (config/init config-file output-file)]
     (aws/init servers-config)
+    (ec2-metadata-server/init servers-config)
     (start servers-config)
     (.addShutdownHook (Runtime/getRuntime) (Thread. stop))
     (log/info "YOPA is running!" stanza)))

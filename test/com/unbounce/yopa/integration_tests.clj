@@ -8,7 +8,8 @@
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is are use-fixtures]]
             [clj-http.client :as http])
-  (:import com.amazonaws.AmazonServiceException))
+  (:import com.amazonaws.AmazonServiceException
+           com.amazonaws.AmazonClientException))
 
 (defn- with-yopa [f]
   (yopa/init-and-start
@@ -96,3 +97,20 @@
 (deftest request-logger
   (let [response (http/get "http://localhost:47196/request-logger")]
     (is (= 200 (:status response)))))
+
+(deftest ec2-metadata-not-found
+  (is
+    (thrown? AmazonClientException
+      (aws/read-ec2-metadata-resource "/_not_found"))))
+
+(deftest ec2-metadata-security-groups
+  (is
+    (= "yopa-local-security-group"
+      (aws/read-ec2-metadata-resource "/latest/meta-data/security-groups"))))
+
+(deftest ec2-metadata-security-groups
+  (let [id-doc-json (aws/read-ec2-metadata-resource "/latest/dynamic/instance-identity/document")
+        id-doc (json/read-str id-doc-json :key-fn keyword)]
+    (is
+      (= "yopa-local"
+        (:region id-doc)))))

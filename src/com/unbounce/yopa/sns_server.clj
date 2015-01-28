@@ -10,14 +10,16 @@
             java.util.Calendar
             java.util.UUID))
 
-(defonce ^:const xml-ns "http://sns.amazonaws.com/doc/2010-03-31/")
-(defonce ^:const subscription-protocols #{"http" "https" "sqs"})
-(defonce ^:const subscription-schemes #{"http" "https" "arn"})
-(defonce ^:const http-timeout-millis 5000)
+(def ^:const http-base-path "/")
 
-(def ^:dynamic topics (atom {}))
-(def ^:dynamic subscriptions (atom {}))
-(def ^:dynamic *action* "n/a")
+(def ^:private ^:const xml-ns "http://sns.amazonaws.com/doc/2010-03-31/")
+(def ^:const subscription-protocols #{"http" "https" "sqs"})
+(def ^:const subscription-schemes #{"http" "https" "arn"})
+(def ^:const http-timeout-millis 5000)
+
+(def ^:private ^:dynamic topics (atom {}))
+(def ^:private ^:dynamic subscriptions (atom {}))
+(def ^:private ^:dynamic *action* "n/a")
 
 (defrecord Topic [name arn subscription-arns attributes])
 (defrecord Subscription [arn endpoint protocol raw-delivery])
@@ -247,7 +249,7 @@
         (log/error t "Failed to handle request: " request)
         (respond 500 (build-error-response "Receiver" (.getMessage t)))))))
 
-(def app
+(def handle-ring-request
   (-> handler
     (standard-errors)
     (params/wrap-params)))
