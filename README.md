@@ -11,6 +11,8 @@ _YOPA is Your Own Personal AWS_
 
 It allows developers to code without being connected to the net.
 
+[![Build Status](https://travis-ci.org/unbounce/yopa.svg)](https://travis-ci.org/unbounce/yopa)
+<br/>
 [![Clojars Project](http://clojars.org/com.unbounce/yopa/latest-version.svg)](http://clojars.org/com.unbounce/yopa)
 
 # Features
