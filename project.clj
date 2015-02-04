@@ -23,7 +23,7 @@
    [circleci/clj-yaml "0.5.3"]
    [de.ubercode.clostache/clostache "1.4.0"]
 
-   [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.2"]
+   [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.5"]
    [amazonica "0.3.13" :exclusions [com.amazonaws/aws-java-sdk
                                     com.amazonaws/amazon-kinesis-client
                                     joda-time
