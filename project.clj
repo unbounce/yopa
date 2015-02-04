@@ -13,6 +13,9 @@
 
   :uberjar-merge-with {#"\.conf$" [slurp str spit]}
 
+  :profiles {:dev {:plugins [[lein-kibit "0.0.8"]
+                             [jonase/eastwood "0.2.1"]]}}
+
   :dependencies
   [
    [org.clojure/clojure "1.6.0"]

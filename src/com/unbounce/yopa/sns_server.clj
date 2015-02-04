@@ -227,7 +227,7 @@
 (defn- handle-unsupported-request [request]
   (bail-client 400 (str "Unsupported action: " *action*)))
 
-(defn- handler [request]
+(defn- request-handler [request]
   (binding [*action* (form-param "Action" request)]
     (case *action*
       "CreateTopic" (handle-create-topic request)
@@ -250,6 +250,6 @@
         (respond 500 (build-error-response "Receiver" (.getMessage t)))))))
 
 (def handle-ring-request
-  (-> handler
+  (-> request-handler
     (standard-errors)
     (params/wrap-params)))

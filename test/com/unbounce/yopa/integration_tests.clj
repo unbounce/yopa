@@ -108,7 +108,7 @@
     (= "yopa-local-security-group"
       (aws/read-ec2-metadata-resource "/latest/meta-data/security-groups"))))
 
-(deftest ec2-metadata-security-groups
+(deftest ec2-dynamic-instance-id-document
   (let [id-doc-json (aws/read-ec2-metadata-resource "/latest/dynamic/instance-identity/document")
         id-doc (json/read-str id-doc-json :key-fn keyword)]
     (is

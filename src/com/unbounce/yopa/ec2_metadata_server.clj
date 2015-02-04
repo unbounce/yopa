@@ -29,7 +29,7 @@
 (defn handle-ring-request [request]
   (let [path (:uri request)
         ; drop / and base-path
-        map-path (into [] (drop 2 (path->keys path)))
+        map-path (vec (drop 2 (path->keys path)))
         value (get-in @metadata map-path)]
     (if
       (nil? value)
