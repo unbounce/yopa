@@ -94,6 +94,20 @@
                                    :message "test message"))]
     (is (some? message-id))))
 
+(deftest topic-unsubscribe-success
+  (let [subscription-id (aws/subscribe
+                          "http://localhost:47196/request-logger"
+                          "http"
+                          "arn:aws:sns:yopa-local:000000000000:test-topic-with-subscriptions")]
+    (aws/unsubscribe subscription-id)))
+
+(deftest topic-unsubscribe-failure
+  (is
+    (thrown-with-msg?
+      AmazonServiceException
+      #"No subscription found for ARN: _doesnt_exist_"
+      (aws/unsubscribe "_doesnt_exist_"))))
+
 (deftest request-logger
   (let [response (http/get "http://localhost:47196/request-logger")]
     (is (= 200 (:status response)))))

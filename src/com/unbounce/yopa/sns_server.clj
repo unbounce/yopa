@@ -138,6 +138,19 @@
       (build-response
         (element "SubscriptionArn" {} (subscribe endpoint protocol topic))))))
 
+
+;; Unsubscribe
+
+(defn- handle-unsubscribe [request]
+  (let [subscription-arn (form-param "SubscriptionArn" request)
+        subscription (get @subscriptions subscription-arn)]
+    (when-not subscription
+      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+    (swap! subscriptions
+           dissoc subscription-arn)
+    (respond 200 (build-response))))
+
+
 ;; Set Subscription Attributes
 
 (defn- handle-set-subscription-attributes [request]
@@ -234,6 +247,7 @@
       "ListTopics" (handle-list-topics request)
       "GetTopicAttributes" (handle-get-topic-attributes request)
       "Subscribe" (handle-subscribe request)
+      "Unsubscribe" (handle-unsubscribe request)
       "SetSubscriptionAttributes" (handle-set-subscription-attributes request)
       "Publish" (handle-publish request)
       (handle-unsupported-request request))))

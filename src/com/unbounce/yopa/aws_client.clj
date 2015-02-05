@@ -59,6 +59,11 @@
          :topic-arn topic-arn
          :endpoint endpoint))))
 
+(defn unsubscribe [subscription-arn]
+  (run-on-sns
+    #(sns/unsubscribe
+       :subscription-arn subscription-arn)))
+
 (defn set-raw-delivery [subscription-arn]
   (run-on-sns
     #(sns/set-subscription-attributes
