@@ -188,7 +188,8 @@
 (defn- route-with-sqs [message message-id queue-arn]
   (let [res (aws/send-sqs-message queue-arn message)]
     (log/info
-      (format "Received SQS message ID: %s when routing SNS message ID: %s to: %s" (:message-id res) message-id queue-arn))))
+      (format "Received SQS message ID: %s when routing SNS message ID: %s to: %s"
+        (:message-id res) message-id queue-arn))))
 
 (defn- wrap-delivery [topic-arn message-id subject message]
   (json/write-str
@@ -203,11 +204,18 @@
   (let [message* (if (:raw-delivery subscription)
                    message
                    (wrap-delivery topic-arn message-id subject message))
-        endpoint (:endpoint subscription)]
-    (case (:protocol subscription)
+        endpoint (:endpoint subscription)
+        protocol (:protocol subscription)]
+    (log/debug
+      (format "Routing message ID: %s from topic: %s to endpoint: %s (protocol: %s)"
+        message-id topic-arn endpoint protocol))
+    (case protocol
       "http" (route-with-http message* message-id endpoint)
       "https" (route-with-http message* message-id endpoint)
-      "sqs" (route-with-sqs message* message-id endpoint))))
+      "sqs" (route-with-sqs message* message-id endpoint)
+      (log/error
+        (format "Ignoring endpoint with invalid protocol: %s when routing message ID: %s from topic: %s to endpoint: %s."
+          protocol message-id topic-arn endpoint)))))
 
 (defn- route-to-subscriptions [subject message topic]
   (let [topic-arn (:arn topic)
@@ -216,11 +224,16 @@
     (if (empty? subscription-arns)
       (log/info
         (format "Topic: %s has no subscription, dropping message: %s" (:name topic) message))
-      (dorun
-        (for [subscription-arn subscription-arns]
-          (let [subscription (get @subscriptions subscription-arn)]
-            (future
-              (route-to-subscription topic-arn message-id subject message subscription))))))
+      (do
+        (log/debug
+          (format
+            "Routing message ID: %s to topic: %s %d subscription(s)."
+            message-id (:name topic) (count subscription-arns)))
+        (dorun
+          (for [subscription-arn subscription-arns]
+            (let [subscription (get @subscriptions subscription-arn)]
+              (future
+                (route-to-subscription topic-arn message-id subject message subscription)))))))
     message-id))
 
 (defn- handle-publish [request]
