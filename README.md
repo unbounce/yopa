@@ -15,6 +15,8 @@ It allows developers to code without being connected to the net.
 <br/>
 [![Clojars Project](http://clojars.org/com.unbounce/yopa/latest-version.svg)](http://clojars.org/com.unbounce/yopa)
 
+Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yopa/).
+
 # Features
 
 - Full-fledged SQS implementation (courtesy of https://github.com/adamw/elasticmq).

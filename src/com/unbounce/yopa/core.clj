@@ -13,6 +13,14 @@
 
 (defonce ^:const stanza "\n\n_/\\/\\____/\\/\\____/\\/\\/\\/\\____/\\/\\/\\/\\/\\________/\\/\\_____\n_/\\/\\____/\\/\\__/\\/\\____/\\/\\__/\\/\\____/\\/\\____/\\/\\/\\/\\___\n___/\\/\\/\\/\\____/\\/\\____/\\/\\__/\\/\\/\\/\\/\\____/\\/\\____/\\/\\_\n_____/\\/\\______/\\/\\____/\\/\\__/\\/\\__________/\\/\\/\\/\\/\\/\\_\n_____/\\/\\________/\\/\\/\\/\\____/\\/\\__________/\\/\\____/\\/\\_\n________________________________________________________\n")
 
+(defn- build-meta []
+  (or
+    (->
+      (eval 'com.unbounce.yopa.core)
+      .getPackage
+      .getImplementationVersion)
+    "YOPA Dev Build"))
+
 (defn usage [options-summary]
   (string/join
     \newline
@@ -23,7 +31,9 @@
      "Options:"
      options-summary
      ""
-     "Please refer to the manual page for more information."]))
+     "Please refer to the manual page for more information."
+     ""
+     (build-meta)]))
 
 (defn error-msg [errors]
   (str "The following errors occurred while parsing your command:\n\n"
@@ -89,4 +99,5 @@
       (:help options) (exit 0 (usage summary))
       (nil? config-file) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))
+    (log/info (build-meta) "is starting!")
     (init-and-start config-file output-file)))

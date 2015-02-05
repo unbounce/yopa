@@ -1,7 +1,10 @@
 (def aws-sdk-version "1.9.17")
 (def ring-version "1.3.2")
 
-(defproject com.unbounce/yopa "1.0.0-SNAPSHOT"
+(def project-version "1.0.0-SNAPSHOT")
+(def build-meta (str "YOPA " project-version " - built on: " (java.util.Date.)))
+
+(defproject com.unbounce/yopa project-version
   :description "YOPA is Your Own Personal Aws"
   :url "https://www.github.com/unbounce/yopa"
   :license {:name "The MIT License (MIT)"
@@ -12,6 +15,8 @@
   :aot [com.unbounce.yopa.core]
 
   :uberjar-merge-with {#"\.conf$" [slurp str spit]}
+
+  :manifest {"Implementation-Version" ~build-meta}
 
   :profiles {:dev {:plugins [[lein-kibit "0.0.8"]
                              [jonase/eastwood "0.2.1"]]}}
