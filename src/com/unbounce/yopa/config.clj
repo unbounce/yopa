@@ -105,7 +105,7 @@
 
 (defn- configure-queue [queue-name]
   (let [queue-url (aws/create-queue queue-name)
-        queue-arn (aws/make-arn "sqs" queue-name)]
+        queue-arn (aws/queue-url->arn queue-url)]
     {:type :sqs :name queue-name :url queue-url :arn queue-arn}))
 
 (defn- configure-queues []

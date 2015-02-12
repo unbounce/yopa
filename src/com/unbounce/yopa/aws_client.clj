@@ -12,6 +12,16 @@
 
 (def ^:private ^:dynamic ec2-metadata-service (atom nil))
 
+(defn run-on-sqs [f]
+  (let [{:keys [host sqs-port]} @config]
+    (aws/with-credential ["x" "x" (str "http://" host ":" sqs-port)]
+      (f))))
+
+(defn run-on-sns [f]
+  (let [{:keys [host sns-port]} @config]
+    (aws/with-credential ["x" "x" (str "http://" host ":" sns-port)]
+      (f))))
+
 (defn make-arn [service name]
   (let [region (:region @config)]
     (format "arn:aws:%s:%s:000000000000:%s" service region name)))
@@ -26,15 +36,12 @@
 (defn queue-arn->url [queue-arn]
   (queue-name->url (arn->name queue-arn)))
 
-(defn run-on-sqs [f]
-  (let [{:keys [host sqs-port]} @config]
-    (aws/with-credential ["x" "x" (str "http://" host ":" sqs-port)]
-      (f))))
-
-(defn run-on-sns [f]
-  (let [{:keys [host sns-port]} @config]
-    (aws/with-credential ["x" "x" (str "http://" host ":" sns-port)]
-      (f))))
+(defn queue-url->arn [queue-url]
+  (:QueueArn
+    (run-on-sqs
+      #(sqs/get-queue-attributes
+         queue-url
+         ["QueueArn"]))))
 
 (defn create-queue [queue-name]
   (:queue-url (run-on-sqs #(sqs/create-queue queue-name))))
