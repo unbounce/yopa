@@ -1,2 +1,5 @@
 language: clojure
+
+before_script: mvn -version
+
 script: lein do clean, kibit, eastwood, test, jar
