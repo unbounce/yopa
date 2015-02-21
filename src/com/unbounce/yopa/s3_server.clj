@@ -14,17 +14,23 @@
 (defn start [host bind-address port data-dir]
   (let [runtime (reset! jruby (Ruby/getGlobalRuntime))]
     (future
+
       (log/info
         (format
           "Active S3 endpoint: http://%s:%d with data dir: %s"
           bind-address
           port
           data-dir))
+
+      ;; the following hijacks the thread hence the future
       (.executeScript
         runtime
         (make-start-script bind-address port data-dir)
         "start.rb")
-      (System/exit 0))))
+      (System/exit 0))
+
+    ;; TODO ponder until S3 server respond
+    ))
 
 (defn stop []
   (when @jruby

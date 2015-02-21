@@ -22,6 +22,11 @@
     (aws/with-credential ["x" "x" (str "http://" host ":" sns-port)]
       (f))))
 
+(defn run-on-s3 [f]
+  (let [{:keys [host s3-port]} @config]
+    (aws/with-credential ["x" "x" (str "http://" host ":" s3-port)]
+      (f))))
+
 (defn make-arn [service name]
   (let [region (:region @config)]
     (format "arn:aws:%s:%s:000000000000:%s" service region name)))

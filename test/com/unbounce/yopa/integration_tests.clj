@@ -4,12 +4,14 @@
             [com.unbounce.yopa.config :as config]
             [amazonica.aws.sns :as sns]
             [amazonica.aws.sqs :as sqs]
+            [amazonica.aws.s3 :as s3]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is are use-fixtures]]
             [clj-http.client :as http])
   (:import com.amazonaws.AmazonServiceException
-           com.amazonaws.AmazonClientException))
+           com.amazonaws.AmazonClientException
+           java.util.UUID))
 
 (defn- with-yopa [f]
   (yopa/init-and-start
@@ -123,11 +125,19 @@
       (aws/read-ec2-metadata-resource "/latest/meta-data/security-groups"))))
 
 (deftest ec2-dynamic-instance-id-document
-  (let [id-doc-json (aws/read-ec2-metadata-resource "/latest/dynamic/instance-identity/document")
-        id-doc (json/read-str id-doc-json :key-fn keyword)]
+  (let [id-doc-json
+        (aws/read-ec2-metadata-resource
+          "/latest/dynamic/instance-identity/document")
+        id-doc
+        (json/read-str id-doc-json :key-fn keyword)]
     (is
       (= "yopa-local"
         (:region id-doc)))))
 
-;; TODO add S3 tests
-
+;; TODO add write/read object, delete bucket, and assertions
+(deftest s3
+  (let [bucket-name (str "yopa-test-" (UUID/randomUUID))]
+    (aws/run-on-s3
+      (fn []
+        (s3/set-s3client-options :path-style-access true)
+        (s3/create-bucket bucket-name)))))
