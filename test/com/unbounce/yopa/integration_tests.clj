@@ -128,3 +128,6 @@
     (is
       (= "yopa-local"
         (:region id-doc)))))
+
+;; TODO add S3 tests
+

@@ -1,4 +1,3 @@
-(def aws-sdk-version "1.9.18")
 (def ring-version "1.3.2")
 
 (def project-version "1.0.0-SNAPSHOT")
@@ -18,6 +17,8 @@
 
   :manifest {"Implementation-Version" ~build-meta}
 
+  :resource-paths ["resources" "rubygems"]
+
   :profiles {:dev {:plugins [[lein-kibit "0.0.8"]
                              [jonase/eastwood "0.2.1"]]}}
 
@@ -32,13 +33,7 @@
    [de.ubercode.clostache/clostache "1.4.0"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.7"]
-   [amazonica "0.3.13" :exclusions [com.amazonaws/aws-java-sdk
-                                    com.amazonaws/amazon-kinesis-client
-                                    joda-time
-                                    org.apache.httpcomponents/httpclient]]
-   [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
-   [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
-   [com.amazonaws/aws-java-sdk-s3  ~aws-sdk-version :exclusions [joda-time]]
+   [amazonica "0.3.15"]
 
    [clj-http "1.0.1"]
    [ring/ring-core ~ring-version]
@@ -46,6 +41,9 @@
 
    [org.clojure/tools.logging "0.3.1"]
    [org.slf4j/slf4j-log4j12 "1.7.7"]
+
+   [org.jruby/jruby "1.7.19" :exclusions [com.github.jnr/jffi
+                                          com.github.jnr/jnr-x86asm]]
   ]
 
   :repositories

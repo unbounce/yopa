@@ -74,18 +74,27 @@
     (for [endpoint-config messaging-config]
       (init-endpoint endpoint-config))))
 
-(defn- generate-regions-override [output-file region host sqs-port sns-port]
-  (let [source (StreamSource. (.getResourceAsStream RegionUtils "/com/amazonaws/regions/regions.xml"))
+(defn- generate-regions-override
+  [output-file region host sqs-port sns-port s3-port]
+  (let [source (StreamSource.
+                 (.getResourceAsStream RegionUtils
+                   "/com/amazonaws/regions/regions.xml"))
         target (StreamResult. output-file)
-        xsl (StreamSource. (io/input-stream (io/resource "inject-yopa-config.xsl")))
-        xslt (.newTransformer (TransformerFactory/newInstance) xsl)]
+        xsl (StreamSource.
+              (io/input-stream
+                (io/resource "inject-yopa-config.xsl")))
+        xslt (.newTransformer
+               (TransformerFactory/newInstance) xsl)]
     (doto xslt
       (.setParameter "region" region)
       (.setParameter "host" host)
       (.setParameter "sqs-port" sqs-port)
       (.setParameter "sns-port" sns-port)
+      (.setParameter "s3-port" s3-port)
       (.transform source target))
-    (log/info "Generated AWS regions override file: " (.getAbsolutePath output-file))))
+
+    (log/info "Generated AWS regions override file: "
+      (.getAbsolutePath output-file))))
 
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))
@@ -95,11 +104,29 @@
         bind-address (get-in config [:bindAddress] "0.0.0.0")
         sqs-port (get-in config [:sqsPort] 47195)
         sns-port (get-in config [:snsPort] 47196)
+        s3-port (get-in config [:s3Port] 47197)
+        s3-data-dir (get-in config [:s3DataDir] "/tmp/yopa-fake-s3/")
         messaging-config (get-in config [:messaging] [])]
+
     (reset! region region*)
-    (generate-regions-override output-file region* host sqs-port sns-port)
+
+    (generate-regions-override
+      output-file
+      region*
+      host
+      sqs-port
+      sns-port
+      s3-port)
+
     (init-messaging messaging-config)
-    {:region @region :host host :bind-address bind-address :sqs-port sqs-port :sns-port sns-port}))
+
+    {:region @region
+     :host host
+     :bind-address bind-address
+     :sqs-port sqs-port
+     :sns-port sns-port
+     :s3-port s3-port
+     :s3-data-dir s3-data-dir}))
 
 ; create and configure AWS entities
 

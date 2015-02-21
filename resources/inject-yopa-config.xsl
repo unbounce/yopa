@@ -4,6 +4,7 @@
   <xsl:param name="host" />
   <xsl:param name="sqs-port" />
   <xsl:param name="sns-port" />
+  <xsl:param name="s3-port" />
   <xsl:output method="xml" indent="yes" />
 
   <xsl:template match="@*|node()">
@@ -34,12 +35,20 @@
             <xsl:value-of select="$host" />:<xsl:value-of select="$sns-port" />
           </Hostname>
         </Endpoint>
+        <Endpoint>
+          <ServiceName>s3</ServiceName>
+          <Http>true</Http>
+          <Https>false</Https>
+          <Hostname>
+            <xsl:value-of select="$host" />:<xsl:value-of select="$s3-port" />
+          </Hostname>
+        </Endpoint>
       </Region>
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="Service[Name='sns' or Name='sqs']">
+  <xsl:template match="Service[Name='sns' or Name='sqs' or Name='s3']">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()"/>
       <RegionName>

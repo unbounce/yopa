@@ -6,6 +6,8 @@ host: localhost
 bindAddress: 0.0.0.0
 sqsPort: 47195
 snsPort: 47196
+s3Port: 47197
+s3DataDir: /tmp/yopa-fake-s3/
 
 messaging:
   # creates a topic with an SQS and an HTTP subscription 

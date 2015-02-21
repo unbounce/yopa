@@ -27,6 +27,10 @@ Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yo
 
 ## Build and run
 
+Bring the rubygems in with:
+
+    mvn -f fake-s3-pom.xml clean initialize
+
 Run the integration tests:
 
     lein test

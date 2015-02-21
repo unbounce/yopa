@@ -1,5 +1,5 @@
 language: clojure
 
-before_script: mvn -version
+before_script: mvn -f fake-s3-pom.xml clean initialize
 
 script: lein do clean, kibit, eastwood, test, jar

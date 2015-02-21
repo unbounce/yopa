@@ -3,6 +3,7 @@
             [com.unbounce.yopa.http-server :as http-server]
             [com.unbounce.yopa.config :as config]
             [com.unbounce.yopa.ec2-metadata-server :as ec2-metadata-server]
+            [com.unbounce.yopa.s3-server :as s3-server]
             [com.unbounce.yopa.aws-client :as aws]
             [clojure.java.io :as io]
             [clojure.string :as string]
@@ -71,14 +72,22 @@
   (println))
 
 (defn- start [servers-config]
-  (let [{:keys [host bind-address sqs-port sns-port]} servers-config]
+  (let [{:keys [host
+                bind-address
+                sqs-port
+                sns-port
+                s3-port
+                s3-data-dir]} servers-config]
+
     (log/info "Starting up...")
     (sqs-server/start host bind-address sqs-port)
     (http-server/start host bind-address sns-port)
+    (s3-server/start host bind-address s3-port s3-data-dir)
     (output-setup (config/setup))))
 
 (defn stop []
   (log/info "Shutting down...")
+  (s3-server/stop)
   (http-server/stop)
   (sqs-server/stop)
   (log/info "Bye!"))

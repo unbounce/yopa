@@ -11,4 +11,4 @@ pom.xml.asc
 .project
 .settings/
 *.nogit
-
+rubygems/
