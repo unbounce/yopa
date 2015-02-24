@@ -1,39 +1,72 @@
 (ns com.unbounce.yopa.s3-server
   (:require [clojure.tools.logging :as log])
-  (:import  org.jruby.Ruby))
+  (:import  org.jruby.Ruby
+            org.jruby.javasupport.JavaEmbedUtils
+            org.jruby.runtime.builtin.IRubyObject))
 
 (def ^:private ^:dynamic jruby (atom nil))
+(def ^:private ^:dynamic server (atom nil))
 
-(defn- make-start-script [bind-address port data-dir]
+(defn- has-status? [status]
+  (some
+    #(and
+      (= (.getName %) "@status")
+      (= (->> % .getValue .toString) status))
+    (.getVariableList @server)))
+
+(defn- ponder-for-status [status]
+  (while
+    (not (has-status? status))
+    (Thread/sleep 1000)))
+
+(defn- make-init-script [bind-address port data-dir]
   (str
-    "require 'fakes3'\n"
-    "store = FakeS3::FileStore.new('" data-dir "')\n"
-    "server = FakeS3::Server.new('" bind-address "'," port ",store,'s3.amazonaws.com',nil,nil)\n"
-    "server.serve"))
+    "require 'fakes3' \n"
+    "store = FakeS3::FileStore.new('" data-dir "') \n"
+    "hostname='s3.amazonaws.com' \n"
+    "server = FakeS3::Server.new('" bind-address "'," port ",store,hostname,nil,nil) \n"
+    "webrick = server.instance_variable_get('@server') \n"
+    "webrick.mount '/', FakeS3::Servlet, store, hostname \n"
+    "webrick"))
+
+(defn- make-s3-server [bind-address port data-dir]
+  (.executeScript
+    @jruby
+    (make-init-script bind-address port data-dir)
+    "init.rb"))
+
+(defn- call-server-method [method]
+  (JavaEmbedUtils/invokeMethod
+    @jruby
+    @server
+    method
+    nil
+    IRubyObject))
 
 (defn start [host bind-address port data-dir]
-  (let [runtime (reset! jruby (Ruby/getGlobalRuntime))]
-    (future
+  (reset! jruby (Ruby/getGlobalRuntime))
+  (reset! server (make-s3-server
+                   bind-address
+                   port
+                   data-dir))
+  (future
+    ;; the following hijacks the thread hence the future
+    (call-server-method "start"))
 
-      (log/info
-        (format
-          "Active S3 endpoint: http://%s:%d with data dir: %s"
-          bind-address
-          port
-          data-dir))
+  (ponder-for-status "Running")
 
-      ;; the following hijacks the thread hence the future
-      (.executeScript
-        runtime
-        (make-start-script bind-address port data-dir)
-        "start.rb")
-      (System/exit 0))
-
-    ;; TODO ponder until S3 server respond
-    ))
+  (log/info
+    (format
+      "Active S3 endpoint: http://%s:%d with data dir: %s"
+      bind-address
+      port
+      data-dir)))
 
 (defn stop []
   (when @jruby
     (log/info "Shutting down S3 server..")
+    (call-server-method "shutdown")
+    (ponder-for-status "Stop")
     (.tearDown @jruby)
+    (reset! server nil)
     (reset! jruby nil)))

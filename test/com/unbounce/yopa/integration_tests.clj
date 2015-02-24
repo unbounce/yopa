@@ -13,9 +13,12 @@
            com.amazonaws.AmazonClientException
            java.util.UUID))
 
+(defonce config-file
+  (io/file "yopa-config-example.yml"))
+
 (defn- with-yopa [f]
   (yopa/init-and-start
-    (io/file "yopa-config-example.yml")
+    config-file
     (yopa/default-override-file))
   (f)
   (yopa/stop))
@@ -134,10 +137,11 @@
       (= "yopa-local"
         (:region id-doc)))))
 
-;; TODO add write/read object, delete bucket, and assertions
 (deftest s3
-  (let [bucket-name (str "yopa-test-" (UUID/randomUUID))]
+  (let [bucket-name (str "yopa-test-" (UUID/randomUUID))
+        bucket (aws/run-on-s3
+                 #(s3/create-bucket bucket-name))]
+    (is
+      (= bucket-name (:name bucket)))
     (aws/run-on-s3
-      (fn []
-        (s3/set-s3client-options :path-style-access true)
-        (s3/create-bucket bucket-name)))))
+      #(s3/delete-bucket bucket-name))))

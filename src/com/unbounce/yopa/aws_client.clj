@@ -2,6 +2,7 @@
   (:require [amazonica.core :as aws]
             [amazonica.aws.sqs :as sqs]
             [amazonica.aws.sns :as sns]
+            [amazonica.aws.s3 :as s3]
             [com.unbounce.yopa.ec2-metadata-server :as ec2-metadata-server]
             [clojure.string :as str]
             [clojure.tools.logging :as log])
@@ -25,6 +26,7 @@
 (defn run-on-s3 [f]
   (let [{:keys [host s3-port]} @config]
     (aws/with-credential ["x" "x" (str "http://" host ":" s3-port)]
+      (s3/set-s3client-options :path-style-access true)
       (f))))
 
 (defn make-arn [service name]

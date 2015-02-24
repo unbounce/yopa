@@ -12,6 +12,7 @@
 
   :main com.unbounce.yopa.core
   :aot [com.unbounce.yopa.core]
+  :jvm-opts ["-XX:MaxPermSize=256m"]
 
   :uberjar-merge-with {#"\.conf$" [slurp str spit]}
 
