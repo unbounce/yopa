@@ -67,9 +67,14 @@
         (aset ar i 2 (:arn r))
         (fill-data-array rs ar (inc i))))))
 
-(defn- output-setup [entities]
+(defn- output-entities [entities]
   (print-table entities)
   (println))
+
+(defn- persisted-entities []
+  (map
+    (fn [b] {:type :s3-bucket :name (:name b)})
+    (aws/list-buckets)))
 
 (defn- start [servers-config]
   (let [{:keys [host
@@ -83,7 +88,10 @@
     (sqs-server/start host bind-address sqs-port)
     (http-server/start host bind-address sns-port)
     (s3-server/start host bind-address s3-port s3-data-dir)
-    (output-setup (config/setup))))
+    (output-entities
+      (concat
+        (config/setup)
+        (persisted-entities)))))
 
 (defn stop []
   (log/info "Shutting down...")

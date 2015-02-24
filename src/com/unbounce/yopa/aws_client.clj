@@ -100,6 +100,9 @@
       (str "http://" host ":" sns-port ec2-metadata-server/http-base-path))
     (reset! ec2-metadata-service (EC2MetadataClient.))))
 
+(defn list-buckets []
+  (run-on-s3 s3/list-buckets))
+
 (defn init [servers-config]
   (reset! config servers-config)
   (init-ec2-metadata-service!))

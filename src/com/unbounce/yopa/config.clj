@@ -133,7 +133,10 @@
 (defn- configure-queue [queue-name]
   (let [queue-url (aws/create-queue queue-name)
         queue-arn (aws/queue-url->arn queue-url)]
-    {:type :sqs :name queue-name :url queue-url :arn queue-arn}))
+    {:type :sqs-queue
+     :name queue-name
+     :url queue-url
+     :arn queue-arn}))
 
 (defn- configure-queues []
   (doall
@@ -141,7 +144,12 @@
 
 (defn- configure-topics []
   (doall
-    (map (fn [e] {:type :sns :name e :arn (aws/create-topic e)}) @sns-endpoints)))
+    (map
+      (fn [e]
+        {:type :sns-topic
+         :name e
+         :arn (aws/create-topic e)})
+      @sns-endpoints)))
 
 (defn- configure-subscription [subscription]
   (let [{:keys [endpoint endpoint-type endpoint-name source rawDelivery]} subscription

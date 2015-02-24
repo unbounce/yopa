@@ -19,20 +19,23 @@
     (not (has-status? status))
     (Thread/sleep 1000)))
 
-(defn- make-init-script [bind-address port data-dir]
+(defn- make-init-script
+  [host bind-address port data-dir]
   (str
     "require 'fakes3' \n"
     "store = FakeS3::FileStore.new('" data-dir "') \n"
-    "hostname='s3.amazonaws.com' \n"
-    "server = FakeS3::Server.new('" bind-address "'," port ",store,hostname,nil,nil) \n"
-    "webrick = server.instance_variable_get('@server') \n"
-    "webrick.mount '/', FakeS3::Servlet, store, hostname \n"
+    "webrick_config = { :BindAddress => '" bind-address "'"
+                     ", :Port        => " port
+                     ", :AccessLog   => [] } \n"
+    "webrick = WEBrick::HTTPServer.new(webrick_config) \n"
+    "webrick.mount '/', FakeS3::Servlet, store, '" host "' \n"
     "webrick"))
 
-(defn- make-s3-server [bind-address port data-dir]
+(defn- make-s3-server
+  [host bind-address port data-dir]
   (.executeScript
     @jruby
-    (make-init-script bind-address port data-dir)
+    (make-init-script host bind-address port data-dir)
     "init.rb"))
 
 (defn- call-server-method [method]
@@ -46,6 +49,7 @@
 (defn start [host bind-address port data-dir]
   (reset! jruby (Ruby/getGlobalRuntime))
   (reset! server (make-s3-server
+                   host
                    bind-address
                    port
                    data-dir))
