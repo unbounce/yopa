@@ -141,11 +141,27 @@
 
 ;; Unsubscribe
 
+(defn- remove-subscription-from-topics
+  [topics subscription-arn]
+  (reduce-kv
+    (fn [result topic-arn topic]
+      (assoc result
+        topic-arn
+        (update-in
+          topic
+          [:subscription-arns]
+          #(disj % subscription-arn))
+        ))
+    {}
+    topics))
+
 (defn- handle-unsubscribe [request]
   (let [subscription-arn (form-param "SubscriptionArn" request)
         subscription (get @subscriptions subscription-arn)]
     (when-not subscription
       (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+    (swap! topics
+           remove-subscription-from-topics subscription-arn)
     (swap! subscriptions
            dissoc subscription-arn)
     (respond 200 (build-response))))
@@ -166,7 +182,9 @@
       (bail-client 400 (str "Attribute value can not be blank")))
     (swap! subscriptions
            assoc subscription-arn
-           (update-in subscription [:raw-delivery] (fn [_] (boolean attribute-value))))
+           (update-in subscription
+             [:raw-delivery]
+             (constantly (boolean attribute-value))))
     (respond 200 (build-response))))
 
 ;; Publish
@@ -180,10 +198,12 @@
                           :socket-timeout http-timeout-millis
                           :conn-timeout http-timeout-millis})]
       (log/info
-        (format "Received status code: %s when routing SNS message ID: %s to: %s" (:status res) message-id uri)))
+        (format "Received status code: %s when routing SNS message ID: %s to: %s"
+          (:status res) message-id uri)))
     (catch Throwable t
       (log/error
-        (format "Caught exception: %s when routing SNS message ID: %s to: %s" (.getMessage t) message-id uri)))))
+        (format "Caught exception: %s when routing SNS message ID: %s to: %s"
+          (.getMessage t) message-id uri)))))
 
 (defn- route-with-sqs [message message-id queue-arn]
   (let [res (aws/send-sqs-message queue-arn message)]
@@ -223,7 +243,8 @@
         message-id (uuid)]
     (if (empty? subscription-arns)
       (log/info
-        (format "Topic: %s has no subscription, dropping message: %s" (:name topic) message))
+        (format "Topic: %s has no subscription, dropping message: %s"
+          (:name topic) message))
       (do
         (log/debug
           (format
@@ -231,9 +252,12 @@
             message-id (:name topic) (count subscription-arns)))
         (dorun
           (for [subscription-arn subscription-arns]
-            (let [subscription (get @subscriptions subscription-arn)]
+            (if-let [subscription (get @subscriptions subscription-arn)]
               (future
-                (route-to-subscription topic-arn message-id subject message subscription)))))))
+                (route-to-subscription topic-arn message-id subject message subscription))
+              (log/warn
+                (format "Nil subscription found for arn: %s in: %s"
+                  subscription-arn @subscriptions)))))))
     message-id))
 
 (defn- handle-publish [request]
