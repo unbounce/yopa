@@ -21,7 +21,8 @@ Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yo
 
 - SQS service, courtesy of https://github.com/adamw/elasticmq
 - S3 service, courtesy of https://github.com/jubos/fake-s3
-- SNS service with support for pre-defined (raw or wrapped) SQS, HTTP and HTTPS subscriptions.
+- SNS service with support for pre-defined and dynamic SQS, HTTP and HTTPS subscriptions.
+  Raw or wrapped deliveries are supported.
   Note that the SNS service does not confirm HTTP/S subscriptions nor retry HTTP/S failed deliveries.
 - EC2 Metadata service.
 

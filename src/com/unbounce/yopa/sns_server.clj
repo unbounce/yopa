@@ -2,6 +2,7 @@
   (:require [ring.middleware.params :as params]
             [clojure.string :as str]
             [clojure.data.json :as json]
+            [base64-clj.core :as b64]
             [clj-http.client :as http]
             [clojure.tools.logging :as log]
             [com.unbounce.yopa.aws-client :as aws]
@@ -169,6 +170,24 @@
            (update-in subscription [:raw-delivery] (fn [_] (boolean attribute-value))))
     (respond 200 (build-response))))
 
+
+;; Confirm Subscription (basically a no-op when valid params are provided)
+
+(defn- handle-confirm-subscription [request]
+  (let [token (form-param "Token" request)
+        subscription-arn (b64/decode token)
+        subscription (get @subscriptions subscription-arn)
+        topic-arn (form-param "TopicArn" request)
+        topic (get @topics topic-arn)]
+    (when-not topic
+      (bail-client 404 (str "No topic found for ARN: " topic-arn)))
+    (when-not subscription
+      (bail-client 400 (str "Invalid token refers to unknown subscription: " subscription-arn)))
+    (respond 200
+      (build-response
+        (element "SubscriptionArn" {} subscription-arn)))))
+
+
 ;; Publish
 
 (defn- route-with-http [message message-id uri]
@@ -262,6 +281,7 @@
       "Subscribe" (handle-subscribe request)
       "Unsubscribe" (handle-unsubscribe request)
       "SetSubscriptionAttributes" (handle-set-subscription-attributes request)
+      "ConfirmSubscription" (handle-confirm-subscription request)
       "Publish" (handle-publish request)
       (handle-unsupported-request request))))
 

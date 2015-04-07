@@ -29,6 +29,7 @@
    [org.clojure/data.xml "0.0.8"]
    [org.clojure/data.json "0.2.5"]
    [org.clojure/tools.cli "0.3.1"]
+   [base64-clj "0.1.1"]
 
    [circleci/clj-yaml "0.5.3"]
    [de.ubercode.clostache/clostache "1.4.0"]
