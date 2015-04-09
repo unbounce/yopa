@@ -97,3 +97,7 @@ To use the EC2 Metadata service, set the SDK overriding property to point to Yop
 Using Yopa's S3 service requires setting the S3 client to use the `forced path style`.
 Check out [this detailed clients guide](https://github.com/jubos/fake-s3/wiki/Supported-Clients)
 to see how to do it for your platform.
+
+Note that Yopa can be configured to create buckets with non-DNS compliant names,
+which is enough for automatically triggering the use of the `forced path style` in the Java AWS SDK.
+In that case it is enough to use `setEndpoint()` to configure the S3 client.

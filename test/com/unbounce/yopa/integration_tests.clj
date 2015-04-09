@@ -143,5 +143,10 @@
                  #(s3/create-bucket bucket-name))]
     (is
       (= bucket-name (:name bucket)))
+
+    (is (not (empty?
+               (aws/run-on-s3
+                 #(s3/list-buckets)))))
+
     (aws/run-on-s3
       #(s3/delete-bucket bucket-name))))
