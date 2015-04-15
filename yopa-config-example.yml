@@ -27,3 +27,8 @@ messaging:
 
   # creates a queue, not subscribed to any topic
   - sqs://test-standalone-queue
+
+storage:
+  buckets:
+    - test-bucket
+    - NOT-DNS-HAPPY-NAME

@@ -1,7 +1,7 @@
-(def ring-version "1.3.2")
-
 (def project-version "1.0.0-SNAPSHOT")
 (def build-meta (str "YOPA " project-version " - built on: " (java.util.Date.)))
+(def ring-version "1.3.2")
+(def aws-sdk-version "1.9.30")
 
 (defproject com.unbounce/yopa project-version
   :description "YOPA is Your Own Personal Aws"
@@ -31,18 +31,23 @@
    [org.clojure/tools.cli "0.3.1"]
    [base64-clj "0.1.1"]
 
+   [org.clojure/tools.logging "0.3.1"]
+   [org.slf4j/slf4j-log4j12 "1.7.7"]
+
    [circleci/clj-yaml "0.5.3"]
    [de.ubercode.clostache/clostache "1.4.0"]
 
-   [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.7"]
-   [amazonica "0.3.15"]
+   [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.8"]
+   [amazonica "0.3.19" :exclusions [com.amazonaws/aws-java-sdk]]
+   ;; Amazonica has a weird dependency on cloudsearch
+   [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
+   [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
+   [com.amazonaws/aws-java-sdk-s3 ~aws-sdk-version :exclusions [joda-time]]
+   [com.amazonaws/aws-java-sdk-cloudsearch ~aws-sdk-version :exclusions [joda-time]]
 
    [clj-http "1.0.1"]
    [ring/ring-core ~ring-version]
    [ring/ring-jetty-adapter ~ring-version]
-
-   [org.clojure/tools.logging "0.3.1"]
-   [org.slf4j/slf4j-log4j12 "1.7.7"]
 
    [org.jruby/jruby "1.7.19" :exclusions [com.github.jnr/jffi
                                           com.github.jnr/jnr-x86asm]]

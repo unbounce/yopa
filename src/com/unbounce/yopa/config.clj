@@ -5,6 +5,7 @@
             [com.unbounce.yopa.aws-client :as aws])
   (:import com.amazonaws.regions.RegionUtils
            java.net.URI
+           java.io.File
            javax.xml.transform.TransformerFactory
            [javax.xml.transform.stream StreamSource StreamResult]))
 
@@ -96,17 +97,26 @@
     (log/info "Generated AWS regions override file: "
       (.getAbsolutePath output-file))))
 
+(defn- init-storage
+  [s3-data-dir storage-config]
+  (dorun
+    (for [bucket (:buckets storage-config)]
+      (->
+        (File. (str s3-data-dir bucket))
+        (.mkdirs)))))
+
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))
   (let [config (yaml/parse-string (slurp config-file))
-        region* (get-in config [:region] "yopa-local")
-        host (get-in config [:host] "localhost")
-        bind-address (get-in config [:bindAddress] "0.0.0.0")
-        sqs-port (get-in config [:sqsPort] 47195)
-        sns-port (get-in config [:snsPort] 47196)
-        s3-port (get-in config [:s3Port] 47197)
-        s3-data-dir (get-in config [:s3DataDir] "/tmp/yopa-fake-s3/")
-        messaging-config (get-in config [:messaging] [])]
+        region* (get config :region "yopa-local")
+        host (get config :host "localhost")
+        bind-address (get config :bindAddress "0.0.0.0")
+        sqs-port (get config :sqsPort 47195)
+        sns-port (get config :snsPort 47196)
+        s3-port (get config :s3Port 47197)
+        s3-data-dir (get config :s3DataDir "/tmp/yopa-fake-s3/")
+        messaging-config (get config :messaging [])
+        storage-config (get config :storage {})]
 
     (reset! region region*)
 
@@ -119,6 +129,7 @@
       s3-port)
 
     (init-messaging messaging-config)
+    (init-storage s3-data-dir storage-config)
 
     {:region @region
      :host host
