@@ -24,7 +24,7 @@
 (def ^:private ^:dynamic *action* "n/a")
 
 (defrecord Topic [name arn subscription-arns attributes])
-(defrecord Subscription [arn endpoint protocol raw-delivery])
+(defrecord Subscription [arn endpoint protocol raw-delivery topic-arn])
 
 ;; Supporting Functions
 
@@ -70,13 +70,15 @@
       (element "Message" {} message))
     (element "RequestId" {} (uuid))))
 
-(defn- form-param [param request]
-  (get (:form-params request) param))
+(defn- req-param [param request]
+  (or
+    (get (:form-params request) param)
+    (get (:query-params request) param)))
 
 ;; Create Topic
 
 (defn- handle-create-topic [request]
-  (let [topic-name (form-param "Name" request)
+  (let [topic-name (req-param "Name" request)
         topic-arn (aws/make-arn "sns" topic-name)]
     (when-not (contains? @topics topic-arn)
       (swap! topics assoc topic-arn
@@ -100,7 +102,7 @@
 ;; Get Topic Attributes
 
 (defn- handle-get-topic-attributes [request]
-  (let [topic-arn (form-param "TopicArn" request)
+  (let [topic-arn (req-param "TopicArn" request)
         attributes (:attributes (get @topics topic-arn))]
     (if attributes
       (respond 200
@@ -116,8 +118,14 @@
 ;; Subscribe
 
 (defn- subscribe [endpoint protocol topic]
-  (let [subscription-arn (str (:arn topic) ":" (uuid))
-        subscription (Subscription. subscription-arn endpoint protocol false)]
+  (let [topic-arn (:arn topic)
+        subscription-arn (str topic-arn ":" (uuid))
+        subscription (Subscription.
+                       subscription-arn
+                       endpoint
+                       protocol
+                       false
+                       topic-arn)]
     (swap! topics assoc (:arn topic)
            (-> topic
              (update-in [:subscription-arns] #(conj % subscription-arn))
@@ -126,9 +134,9 @@
     subscription-arn))
 
 (defn- handle-subscribe [request]
-  (let [endpoint (form-param "Endpoint" request)
-        protocol (form-param "Protocol" request)
-        topic-arn (form-param "TopicArn" request)
+  (let [endpoint (req-param "Endpoint" request)
+        protocol (req-param "Protocol" request)
+        topic-arn (req-param "TopicArn" request)
         topic (get @topics topic-arn)]
     (when-not topic
       (bail-client 404 (str "No topic found for ARN: " topic-arn)))
@@ -158,10 +166,11 @@
     topics))
 
 (defn- handle-unsubscribe [request]
-  (let [subscription-arn (form-param "SubscriptionArn" request)
+  (let [subscription-arn (req-param "SubscriptionArn" request)
         subscription (get @subscriptions subscription-arn)]
     (when-not subscription
-      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+      (bail-client 404
+        (str "No subscription found for ARN: " subscription-arn)))
     (swap! topics
            remove-subscription-from-topics subscription-arn)
     (swap! subscriptions
@@ -172,16 +181,19 @@
 ;; Set Subscription Attributes
 
 (defn- handle-set-subscription-attributes [request]
-  (let [attribute-name (form-param "AttributeName" request)
-        attribute-value (form-param "AttributeValue" request)
-        subscription-arn (form-param "SubscriptionArn" request)
+  (let [attribute-name (req-param "AttributeName" request)
+        attribute-value (req-param "AttributeValue" request)
+        subscription-arn (req-param "SubscriptionArn" request)
         subscription (get @subscriptions subscription-arn)]
     (when-not subscription
-      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+      (bail-client 404
+        (str "No subscription found for ARN: " subscription-arn)))
     (when-not (= attribute-name "RawMessageDelivery")
-      (bail-client 400 (str "Unsupported attribute name: " attribute-name)))
+      (bail-client 400
+        (str "Unsupported attribute name: " attribute-name)))
     (when (str/blank? attribute-value)
-      (bail-client 400 (str "Attribute value can not be blank")))
+      (bail-client 400
+        (str "Attribute value can not be blank")))
     (swap! subscriptions
            assoc subscription-arn
            (update-in subscription
@@ -193,10 +205,10 @@
 ;; Confirm Subscription (basically a no-op when valid params are provided)
 
 (defn- handle-confirm-subscription [request]
-  (let [token (form-param "Token" request)
+  (let [token (req-param "Token" request)
         subscription-arn (b64/decode token)
         subscription (get @subscriptions subscription-arn)
-        topic-arn (form-param "TopicArn" request)
+        topic-arn (req-param "TopicArn" request)
         topic (get @topics topic-arn)]
     (when-not topic
       (bail-client 404 (str "No topic found for ARN: " topic-arn)))
@@ -232,7 +244,7 @@
           (map subscription-list (vals @topics)))))))
 
 (defn- handle-list-subscriptions-by-topic [request]
-  (let [topic-arn (form-param "TopicArn" request)
+  (let [topic-arn (req-param "TopicArn" request)
         topic (get @topics topic-arn)]
     (when-not topic
       (bail-client 404 (str "No topic found for ARN: " topic-arn)))
@@ -242,15 +254,19 @@
           (subscription-list topic))))))
 
 
-;; Verify Subscriptions
+;; Verify Subscription
 ;; (custom action that triggers a confirmation of the specified HTTP/S subscription)
 
 (defn- handle-verify-subscription [request]
-  (let [subscription-arn (form-param "SubscriptionArn" request)
+  (let [subscription-arn (req-param "SubscriptionArn" request)
         subscription (get @subscriptions subscription-arn)
-        protocol (:protocol subscription)]
+        protocol (:protocol subscription)
+        topic-arn (:topic-arn subscription)
+        message-id (uuid)]
+
     (when-not subscription
       (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+
     (when-not
       (contains?
         confirmable-subscription-protocols
@@ -258,18 +274,48 @@
       (bail-client 400 (str
                          "Subscription: " subscription-arn
                          " doesn't have a confirmable protocol: " protocol)))
-    ;; TODO actually verify!
     (log/info
       (format "Verifying subscription: %s" subscription-arn))
+
+    (http/post (:endpoint subscription)
+               {:headers {:Content-Type "application/json"
+                          "x-amz-sns-message-type" "SubscriptionConfirmation"
+                          "x-amz-sns-message-id" message-id
+                          "x-amz-sns-topic-arn" topic-arn}
+                :body (json/write-str
+                        {:Type "Notification"
+                         :MessageId message-id
+                         :TopicArn topic-arn
+                         :SubscribeURL (str
+                                         (name (:scheme request))
+                                         "://"
+                                         (get-in request [:headers "host"])
+                                         "/?Action=ConfirmSubscription"
+                                         "&TopicArn=" topic-arn
+                                         "&Token=" (b64/encode subscription-arn))
+                         :Message (str
+                                    "You have chosen to subscribe to the topic "
+                                    topic-arn
+                                    ".\nTo confirm the subscription, visit the SubscribeURL included in this message.")
+                         :Timestamp (get-current-iso-8601-date)})
+                :throw-exceptions true
+                :socket-timeout http-timeout-millis
+                :conn-timeout http-timeout-millis})
+
     (respond 200 (build-response))))
 
 
 ;; Publish
 
-(defn- route-with-http [message message-id uri]
+(defn- route-with-http
+  [message message-id uri topic-arn subscription-arn]
   (try
     (let [res (http/post uri
-                         {:headers {:Content-Type "application/json"}
+                         {:headers {:Content-Type "application/json"
+                                    "x-amz-sns-message-type" "Notification"
+                                    "x-amz-sns-message-id" message-id
+                                    "x-amz-sns-topic-arn" topic-arn
+                                    "x-amz-sns-subscription-arn" subscription-arn}
                           :body message
                           :throw-exceptions true
                           :socket-timeout http-timeout-millis
@@ -302,14 +348,33 @@
                    message
                    (wrap-delivery topic-arn message-id subject message))
         endpoint (:endpoint subscription)
-        protocol (:protocol subscription)]
+        protocol (:protocol subscription)
+        subscription-arn (:arn subscription)]
+
     (log/debug
       (format "Routing message ID: %s from topic: %s to endpoint: %s (protocol: %s)"
         message-id topic-arn endpoint protocol))
+
     (case protocol
-      "http" (route-with-http message* message-id endpoint)
-      "https" (route-with-http message* message-id endpoint)
-      "sqs" (route-with-sqs message* message-id endpoint)
+      "http" (route-with-http
+               message*
+               message-id
+               endpoint
+               topic-arn
+               subscription-arn)
+
+      "https" (route-with-http
+                message*
+                message-id
+                endpoint
+                topic-arn
+                subscription-arn)
+
+      "sqs" (route-with-sqs
+              message*
+              message-id
+              endpoint)
+
       (log/error
         (format "Ignoring endpoint with invalid protocol: %s when routing message ID: %s from topic: %s to endpoint: %s."
           protocol message-id topic-arn endpoint)))))
@@ -338,9 +403,9 @@
     message-id))
 
 (defn- handle-publish [request]
-  (let [topic-arn (form-param "TopicArn" request)
-        subject (form-param "Subject" request)
-        message (form-param "Message" request)
+  (let [topic-arn (req-param "TopicArn" request)
+        subject (req-param "Subject" request)
+        message (req-param "Message" request)
         topic (get @topics topic-arn)]
     (when-not topic
       (bail-client 404 (str "No topic found for ARN: " topic-arn)))
@@ -356,7 +421,7 @@
   (bail-client 400 (str "Unsupported action: " *action*)))
 
 (defn- request-handler [request]
-  (binding [*action* (form-param "Action" request)]
+  (binding [*action* (req-param "Action" request)]
     (case *action*
       "CreateTopic"               (handle-create-topic request)
       "ListTopics"                (handle-list-topics request)

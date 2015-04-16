@@ -101,9 +101,9 @@
   [s3-data-dir storage-config]
   (dorun
     (for [bucket (:buckets storage-config)]
-      (->
-        (File. (str s3-data-dir bucket))
-        (.mkdirs)))))
+      (.mkdirs
+        (File.
+          (str s3-data-dir bucket))))))
 
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))

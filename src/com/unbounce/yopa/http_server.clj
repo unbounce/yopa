@@ -8,7 +8,9 @@
 (def ^:private ^:dynamic server (atom nil))
 
 (defn- log-request [request]
-  (log/info "Request logger received: " request)
+  (log/info
+    "Request logger received:"
+    (update-in request [:body] slurp))
   (response ""))
 
 (defn- request-router [request]

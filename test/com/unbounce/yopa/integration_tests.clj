@@ -5,6 +5,7 @@
             [amazonica.aws.sns :as sns]
             [amazonica.aws.sqs :as sqs]
             [amazonica.aws.s3 :as s3]
+            [base64-clj.core :as b64]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is are use-fixtures]]
@@ -113,22 +114,43 @@
       #"No subscription found for ARN: _doesnt_exist_"
       (aws/unsubscribe "_doesnt_exist_"))))
 
-
 (deftest topic-list-subscriptions
-  (let [subscriptions (aws/run-on-sns sns/list-subscriptions)]
+  (let [subscriptions (:subscriptions
+                        (aws/run-on-sns sns/list-subscriptions))]
+    (println "!!!!" subscriptions)
     (is
       (>=
-        (count (:subscriptions subscriptions))
+        (count subscriptions)
         3))))
 
 (deftest topic-list-subscriptions-by-topic
   (let [topic-arn (aws/make-arn "sns" "test-topic-with-subscriptions")
-        subscriptions (aws/run-on-sns
-                        #(sns/list-subscriptions-by-topic topic-arn))]
+        subscriptions (:subscriptions
+                        (aws/run-on-sns
+                          #(sns/list-subscriptions-by-topic topic-arn)))]
     (is
       (>=
-        (count (:subscriptions subscriptions))
+        (count subscriptions)
         3))))
+
+(deftest confirm-subscription
+  (let [subscriptions (:subscriptions
+                        (aws/run-on-sns sns/list-subscriptions))
+        http-subscription (first
+                            (filter
+                              #(= (:protocol %) "http")
+                              subscriptions))
+        topic-arn (:topic-arn http-subscription)
+        token (b64/encode (:subscription-arn http-subscription))
+        response (http/get
+                   (str
+                     "http://localhost:47196/"
+                     "?Action=ConfirmSubscription"
+                     "&TopicArn=" topic-arn
+                     "&Token=" token))]
+    (is (= 200 (:status response)))))
+
+;; TODO test Verify Subscription
 
 (deftest request-logger
   (let [response (http/get "http://localhost:47196/request-logger")]
