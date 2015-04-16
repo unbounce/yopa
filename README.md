@@ -56,6 +56,16 @@ Run with the example config:
     lein trampoline run --config yopa-config-example.yml
 
 
+## Docker container release process
+
+Run the following:
+
+  lein clean
+  mvn -f fake-s3-pom.xml clean initialize
+  lein uberimage -t unbounce/yopa:latest
+  sudo docker push unbounce/yopa:latest
+
+
 ## Usage
 
 Run `lein run` to get help.
