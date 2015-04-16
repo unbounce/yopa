@@ -113,6 +113,14 @@
       #"No subscription found for ARN: _doesnt_exist_"
       (aws/unsubscribe "_doesnt_exist_"))))
 
+
+(deftest topic-list-subscriptions
+  (let [subscriptions (aws/run-on-sns sns/list-subscriptions)]
+    (is
+      (>=
+        (count (:subscriptions subscriptions))
+        3))))
+
 (deftest topic-list-subscriptions-by-topic
   (let [topic-arn (aws/make-arn "sns" "test-topic-with-subscriptions")
         subscriptions (aws/run-on-sns

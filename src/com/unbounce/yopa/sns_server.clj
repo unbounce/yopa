@@ -224,6 +224,13 @@
       (:arn topic))
     (:subscription-arns topic)))
 
+(defn- handle-list-subscriptions []
+  (respond 200
+    (build-response
+      (element "Subscriptions" {}
+        (flatten
+          (map subscription-list (vals @topics)))))))
+
 (defn- handle-list-subscriptions-by-topic [request]
   (let [topic-arn (form-param "TopicArn" request)
         topic (get @topics topic-arn)]
@@ -358,6 +365,7 @@
       "Unsubscribe"               (handle-unsubscribe request)
       "SetSubscriptionAttributes" (handle-set-subscription-attributes request)
       "ConfirmSubscription"       (handle-confirm-subscription request)
+      "ListSubscriptions"         (handle-list-subscriptions)
       "ListSubscriptionsByTopic"  (handle-list-subscriptions-by-topic request)
       "Publish"                   (handle-publish request)
 
