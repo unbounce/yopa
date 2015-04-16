@@ -57,7 +57,8 @@
    ["-h" "--help"]])
 
 (defn- fill-data-array
-  ([rows ar] (fill-data-array rows ar 0))
+  ([rows ar]
+    (fill-data-array rows ar 0))
   ([rows ar i]
     (if (empty? rows)
       ar

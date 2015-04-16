@@ -23,8 +23,18 @@ Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yo
 - S3 service, courtesy of https://github.com/jubos/fake-s3
 - SNS service with support for pre-defined and dynamic SQS, HTTP and HTTPS subscriptions.
   Raw or wrapped deliveries are supported.
-  Note that the SNS service does not confirm HTTP/S subscriptions nor retry HTTP/S failed deliveries.
 - EC2 Metadata service.
+
+
+## HTTP/S SNS subscriptions
+
+- The SNS service does not retry HTTP/S failed deliveries.
+- HTTP/S subscriptions are considered immediately confirmed,
+  this to ease testing applications without having to constantly re-subscribe them.
+  To validate the HTTP/S subscription logic of an application,
+  it's possible to instruct YOPA to verify a subscription via a custom SNS command:
+
+      curl -v -dAction=VerifySubscription -dSubscriptionArn=<ARN> http://localhost:47196
 
 
 ## Build and run

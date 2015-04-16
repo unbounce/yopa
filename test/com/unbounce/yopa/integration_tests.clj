@@ -57,8 +57,8 @@
   (is
     (thrown-with-msg?
       AmazonServiceException
-      #"Unsupported action: ConfirmSubscription"
-      (aws/run-on-sns #(sns/confirm-subscription "fake-arn" "fake-token")))))
+      #"Unsupported action: DeleteTopic"
+      (aws/run-on-sns #(sns/delete-topic "fake-arn")))))
 
 (defn- receive-one-message [queue-name]
   (let [queue-url (aws/queue-name->url queue-name)
@@ -112,6 +112,15 @@
       AmazonServiceException
       #"No subscription found for ARN: _doesnt_exist_"
       (aws/unsubscribe "_doesnt_exist_"))))
+
+(deftest topic-list-subscriptions-by-topic
+  (let [topic-arn (aws/make-arn "sns" "test-topic-with-subscriptions")
+        subscriptions (aws/run-on-sns
+                        #(sns/list-subscriptions-by-topic topic-arn))]
+    (is
+      (>=
+        (count (:subscriptions subscriptions))
+        3))))
 
 (deftest request-logger
   (let [response (http/get "http://localhost:47196/request-logger")]

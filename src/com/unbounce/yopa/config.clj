@@ -169,7 +169,10 @@
         subscription-arn (aws/subscribe endpoint endpoint-type topic-arn)]
     (when rawDelivery
       (aws/set-raw-delivery subscription-arn))
-    {:type :sns-subscription :topic-arn topic-arn :endpoint endpoint :arn subscription-arn}))
+    {:type :sns-subscription
+     :name source
+     :url endpoint
+     :arn subscription-arn}))
 
 (defn- configure-subscriptions []
   (doall

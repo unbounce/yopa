@@ -14,6 +14,7 @@
 (def ^:const http-base-path "/")
 
 (def ^:private ^:const xml-ns "http://sns.amazonaws.com/doc/2010-03-31/")
+(def ^:const confirmable-subscription-protocols #{"http" "https"})
 (def ^:const subscription-protocols #{"http" "https" "sqs"})
 (def ^:const subscription-schemes #{"http" "https" "arn"})
 (def ^:const http-timeout-millis 5000)
@@ -206,6 +207,56 @@
         (element "SubscriptionArn" {} subscription-arn)))))
 
 
+;; List Subscriptions By Topic
+
+(defn- subscription-list-entry [topic-arn subscription-arn]
+  (when-let [subscription (get @subscriptions subscription-arn)]
+    (element "member" {}
+      (element "TopicArn" {} topic-arn)
+      (element "Protocol" {} (:protocol subscription))
+      (element "SubscriptionArn" {} (:arn subscription))
+      (element "Endpoint" {} (:endpoint subscription)))))
+
+(defn- subscription-list [topic]
+  (map
+    (partial
+      subscription-list-entry
+      (:arn topic))
+    (:subscription-arns topic)))
+
+(defn- handle-list-subscriptions-by-topic [request]
+  (let [topic-arn (form-param "TopicArn" request)
+        topic (get @topics topic-arn)]
+    (when-not topic
+      (bail-client 404 (str "No topic found for ARN: " topic-arn)))
+    (respond 200
+      (build-response
+        (element "Subscriptions" {}
+          (subscription-list topic))))))
+
+
+;; Verify Subscriptions
+;; (custom action that triggers a confirmation of the specified HTTP/S subscription)
+
+(defn- handle-verify-subscription [request]
+  (let [subscription-arn (form-param "SubscriptionArn" request)
+        subscription (get @subscriptions subscription-arn)
+        protocol (:protocol subscription)]
+    (when-not subscription
+      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+    (when-not
+      (contains?
+        confirmable-subscription-protocols
+        protocol)
+      (bail-client 400 (str
+                         "Subscription: " subscription-arn
+                         " doesn't have a confirmable protocol: " protocol)))
+    ;; TODO actually verify!
+    (log/info
+      (format "Verifying subscription: %s" subscription-arn))
+    (respond 200 (build-response))))
+
+
 ;; Publish
 
 (defn- route-with-http [message message-id uri]
@@ -291,6 +342,7 @@
         (build-response
           (element "MessageId" {} message-id))))))
 
+
 ;; General Handling Machinery
 
 (defn- handle-unsupported-request [request]
@@ -299,14 +351,20 @@
 (defn- request-handler [request]
   (binding [*action* (form-param "Action" request)]
     (case *action*
-      "CreateTopic" (handle-create-topic request)
-      "ListTopics" (handle-list-topics request)
-      "GetTopicAttributes" (handle-get-topic-attributes request)
-      "Subscribe" (handle-subscribe request)
-      "Unsubscribe" (handle-unsubscribe request)
+      "CreateTopic"               (handle-create-topic request)
+      "ListTopics"                (handle-list-topics request)
+      "GetTopicAttributes"        (handle-get-topic-attributes request)
+      "Subscribe"                 (handle-subscribe request)
+      "Unsubscribe"               (handle-unsubscribe request)
       "SetSubscriptionAttributes" (handle-set-subscription-attributes request)
-      "ConfirmSubscription" (handle-confirm-subscription request)
-      "Publish" (handle-publish request)
+      "ConfirmSubscription"       (handle-confirm-subscription request)
+      "ListSubscriptionsByTopic"  (handle-list-subscriptions-by-topic request)
+      "Publish"                   (handle-publish request)
+
+      ;; custom actions
+      "VerifySubscription"       (handle-verify-subscription request)
+
+      ;; catch all
       (handle-unsupported-request request))))
 
 (defn- standard-errors [handler]
