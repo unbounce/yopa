@@ -310,9 +310,9 @@
   (try
     (verify-subscription subscription)
     (catch Throwable t
-      (log/error t
-        "Failed to verify subscription:"
-        (:arn subscription)))))
+      (log/warn
+        "Failed to verify subscription:" (:arn subscription)
+        "(" (.getMessage t) ")"))))
 
 (defn- handle-verify-subscription [request]
   (let [subscription-arn (req-param "SubscriptionArn" request)
