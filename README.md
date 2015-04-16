@@ -29,12 +29,16 @@ Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yo
 ## HTTP/S SNS subscriptions
 
 - The SNS service does not retry HTTP/S failed deliveries.
-- HTTP/S subscriptions are considered immediately confirmed,
+- HTTP/S subscriptions are immediately active,
+  whether or not they have been confirmed,
   this to ease testing applications without having to constantly re-subscribe them.
-  To validate the HTTP/S subscription logic of an application,
-  it's possible to instruct YOPA to verify a subscription via a custom SNS command:
+- It's possible to manually instruct YOPA to verify an HTTP/S
+  subscription via a custom SNS command:
 
       curl -v -dAction=VerifySubscription -dSubscriptionArn=<ARN> http://localhost:47196
+
+  assuming YOPA SNS is reachable at `http://localhost:47196`
+  (replace with whatever hostname and port is relevant for you).
 
 
 ## Build and run

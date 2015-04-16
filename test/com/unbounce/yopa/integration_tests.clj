@@ -117,7 +117,6 @@
 (deftest topic-list-subscriptions
   (let [subscriptions (:subscriptions
                         (aws/run-on-sns sns/list-subscriptions))]
-    (println "!!!!" subscriptions)
     (is
       (>=
         (count subscriptions)

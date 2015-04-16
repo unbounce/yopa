@@ -21,12 +21,18 @@
 
 (def ^:private ^:dynamic topics (atom {}))
 (def ^:private ^:dynamic subscriptions (atom {}))
-(def ^:private ^:dynamic *action* "n/a")
+(def ^:private ^:dynamic *request-action* "n/a")
+(def ^:private ^:dynamic *request-base-uri* "n/a")
 
 (defrecord Topic [name arn subscription-arns attributes])
 (defrecord Subscription [arn endpoint protocol raw-delivery topic-arn])
 
 ;; Supporting Functions
+
+(defn- confirmable-subscription-protocol? [protocol]
+  (contains?
+    confirmable-subscription-protocols
+    protocol))
 
 (defn- uuid [] (str (UUID/randomUUID)))
 
@@ -54,8 +60,8 @@
   ([]
     (build-response nil))
   ([body]
-    (let [response-type (str *action* "Response")
-          result-type (str *action* "Result")]
+    (let [response-type (str *request-action* "Response")
+          result-type (str *request-action* "Result")]
       (element response-type {:xmlns xml-ns}
         (when body
           (element result-type {}
@@ -117,6 +123,8 @@
 
 ;; Subscribe
 
+(declare safe-verify-subscription)
+
 (defn- subscribe [endpoint protocol topic]
   (let [topic-arn (:arn topic)
         subscription-arn (str topic-arn ":" (uuid))
@@ -126,11 +134,18 @@
                        protocol
                        false
                        topic-arn)]
+
     (swap! topics assoc (:arn topic)
            (-> topic
              (update-in [:subscription-arns] #(conj % subscription-arn))
              (update-in [:attributes "SubscriptionsConfirmed"] inc)))
+
     (swap! subscriptions assoc subscription-arn subscription)
+
+    (when
+      (confirmable-subscription-protocol? protocol)
+      (safe-verify-subscription subscription))
+
     subscription-arn))
 
 (defn- handle-subscribe [request]
@@ -214,6 +229,9 @@
       (bail-client 404 (str "No topic found for ARN: " topic-arn)))
     (when-not subscription
       (bail-client 400 (str "Invalid token refers to unknown subscription: " subscription-arn)))
+    (log/info
+      "Confirmed subscription:" subscription-arn
+      "on topic:" topic-arn)
     (respond 200
       (build-response
         (element "SubscriptionArn" {} subscription-arn)))))
@@ -257,23 +275,11 @@
 ;; Verify Subscription
 ;; (custom action that triggers a confirmation of the specified HTTP/S subscription)
 
-(defn- handle-verify-subscription [request]
-  (let [subscription-arn (req-param "SubscriptionArn" request)
-        subscription (get @subscriptions subscription-arn)
-        protocol (:protocol subscription)
+(defn- verify-subscription [subscription]
+  (let [subscription-arn (:arn subscription)
         topic-arn (:topic-arn subscription)
         message-id (uuid)]
 
-    (when-not subscription
-      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
-
-    (when-not
-      (contains?
-        confirmable-subscription-protocols
-        protocol)
-      (bail-client 400 (str
-                         "Subscription: " subscription-arn
-                         " doesn't have a confirmable protocol: " protocol)))
     (log/info
       (format "Verifying subscription: %s" subscription-arn))
 
@@ -287,9 +293,7 @@
                          :MessageId message-id
                          :TopicArn topic-arn
                          :SubscribeURL (str
-                                         (name (:scheme request))
-                                         "://"
-                                         (get-in request [:headers "host"])
+                                         *request-base-uri*
                                          "/?Action=ConfirmSubscription"
                                          "&TopicArn=" topic-arn
                                          "&Token=" (b64/encode subscription-arn))
@@ -300,7 +304,31 @@
                          :Timestamp (get-current-iso-8601-date)})
                 :throw-exceptions true
                 :socket-timeout http-timeout-millis
-                :conn-timeout http-timeout-millis})
+                :conn-timeout http-timeout-millis})))
+
+(defn- safe-verify-subscription [subscription]
+  (try
+    (verify-subscription subscription)
+    (catch Throwable t
+      (log/error t
+        "Failed to verify subscription:"
+        (:arn subscription)))))
+
+(defn- handle-verify-subscription [request]
+  (let [subscription-arn (req-param "SubscriptionArn" request)
+        subscription (get @subscriptions subscription-arn)
+        protocol (:protocol subscription)]
+
+    (when-not subscription
+      (bail-client 404 (str "No subscription found for ARN: " subscription-arn)))
+
+    (when-not
+      (confirmable-subscription-protocol? protocol)
+      (bail-client 400 (str
+                         "Subscription: " subscription-arn
+                         " doesn't have a confirmable protocol: " protocol)))
+
+    (verify-subscription subscription)
 
     (respond 200 (build-response))))
 
@@ -418,11 +446,15 @@
 ;; General Handling Machinery
 
 (defn- handle-unsupported-request [request]
-  (bail-client 400 (str "Unsupported action: " *action*)))
+  (bail-client 400 (str "Unsupported action: " *request-action*)))
 
 (defn- request-handler [request]
-  (binding [*action* (req-param "Action" request)]
-    (case *action*
+  (binding [*request-action* (req-param "Action" request)
+            *request-base-uri* (str
+                                 (name (:scheme request))
+                                 "://"
+                                 (get-in request [:headers "host"]))]
+    (case *request-action*
       "CreateTopic"               (handle-create-topic request)
       "ListTopics"                (handle-list-topics request)
       "GetTopicAttributes"        (handle-get-topic-attributes request)
