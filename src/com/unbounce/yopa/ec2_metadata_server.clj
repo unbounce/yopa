@@ -26,6 +26,11 @@
 (defn- path->keys [path]
   (map keyword (str/split path #"/")))
 
+(defn- value->body [value]
+  (if (map? value)
+    (name (first (keys value)))
+    value))
+
 (defn handle-ring-request [request]
   (let [path (:uri request)
         ; drop / and base-path
@@ -35,4 +40,4 @@
       (nil? value)
       (not-found
         (str "No EC2 Metadata at path: " path))
-      (response value))))
+      (response (value->body value)))))

@@ -172,8 +172,26 @@
         id-doc
         (json/read-str id-doc-json :key-fn keyword)]
     (is
-      (= "yopa-local"
-        (:region id-doc)))))
+      (= (:region id-doc)
+        "yopa-local"))))
+
+(deftest ec2-meta-iam-security-credentials
+  (let [iam-sc
+        (aws/read-ec2-metadata-resource
+          "/latest/meta-data/iam/security-credentials")]
+    (is
+      (= iam-sc
+        "fake-role-name")))
+
+  (let [iam-doc-json
+        (aws/read-ec2-metadata-resource
+          "/latest/meta-data/iam/security-credentials/fake-role-name")
+        iam-doc
+        (json/read-str iam-doc-json :key-fn keyword)]
+    (is
+      (.contains
+        (:Type iam-doc)
+        "AWS-HMAC"))))
 
 (deftest s3
   (let [bucket-name (str "yopa-test-" (UUID/randomUUID))
