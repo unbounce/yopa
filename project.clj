@@ -27,29 +27,30 @@
   [
    [org.clojure/clojure "1.6.0"]
    [org.clojure/data.xml "0.0.8"]
-   [org.clojure/data.json "0.2.5"]
+   [org.clojure/data.json "0.2.6"]
    [org.clojure/tools.cli "0.3.1"]
    [base64-clj "0.1.1"]
 
    [org.clojure/tools.logging "0.3.1"]
-   [org.slf4j/slf4j-log4j12 "1.7.7"]
+   [org.slf4j/slf4j-log4j12 "1.7.12"]
 
    [circleci/clj-yaml "0.5.3"]
    [de.ubercode.clostache/clostache "1.4.0"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.8"]
-   [amazonica "0.3.19" :exclusions [com.amazonaws/aws-java-sdk]]
-   ;; Amazonica has a weird dependency on cloudsearch
+   [amazonica "0.3.22" :exclusions [com.amazonaws/aws-java-sdk]]
    [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-s3 ~aws-sdk-version :exclusions [joda-time]]
+   ;; Amazonica has a weird dependency on cloudsearch and lambda
    [com.amazonaws/aws-java-sdk-cloudsearch ~aws-sdk-version :exclusions [joda-time]]
+   [com.amazonaws/aws-java-sdk-lambda ~aws-sdk-version :exclusions [joda-time]]
 
-   [clj-http "1.0.1"]
+   [clj-http "1.1.2"]
    [ring/ring-core ~ring-version]
    [ring/ring-jetty-adapter ~ring-version]
 
-   [org.jruby/jruby "1.7.19" :exclusions [com.github.jnr/jffi
+   [org.jruby/jruby "1.7.20" :exclusions [com.github.jnr/jffi
                                           com.github.jnr/jnr-x86asm]]
   ]
 
