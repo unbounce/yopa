@@ -1,7 +1,7 @@
 (def project-version "1.0.0-SNAPSHOT")
 (def build-meta (str "YOPA " project-version " - built on: " (java.util.Date.)))
 (def ring-version "1.3.2")
-(def aws-sdk-version "1.9.39")
+(def aws-sdk-version "1.9.40")
 
 (defproject com.unbounce/yopa project-version
   :description "YOPA is Your Own Personal Aws"
