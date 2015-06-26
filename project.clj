@@ -1,7 +1,7 @@
 (def project-version "1.0.0-SNAPSHOT")
 (def build-meta (str "YOPA " project-version " - built on: " (java.util.Date.)))
 (def ring-version "1.3.2")
-(def aws-sdk-version "1.10.0")
+(def aws-sdk-version "1.10.2")
 
 (defproject com.unbounce/yopa project-version
   :description "YOPA is Your Own Personal Aws"
@@ -38,7 +38,7 @@
    [de.ubercode.clostache/clostache "1.4.0"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.8" :exclusions [joda-time]]
-   [amazonica "0.3.24" :exclusions [com.amazonaws/aws-java-sdk]]
+   [amazonica "0.3.27" :exclusions [com.amazonaws/aws-java-sdk]]
    [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-s3 ~aws-sdk-version :exclusions [joda-time]]
