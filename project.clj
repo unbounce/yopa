@@ -38,7 +38,7 @@
    [de.ubercode.clostache/clostache "1.4.0"]
 
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.8" :exclusions [joda-time]]
-   [amazonica "0.3.27" :exclusions [com.amazonaws/aws-java-sdk]]
+   [amazonica "0.3.28" :exclusions [com.amazonaws/aws-java-sdk]]
    [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-sns ~aws-sdk-version :exclusions [joda-time]]
    [com.amazonaws/aws-java-sdk-s3 ~aws-sdk-version :exclusions [joda-time]]
