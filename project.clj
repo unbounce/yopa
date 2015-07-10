@@ -53,7 +53,7 @@
    [ring/ring-core ~ring-version]
    [ring/ring-jetty-adapter ~ring-version]
 
-   [org.jruby/jruby "9.0.0.0.rc1" :exclusions [com.github.jnr/jffi
+   [org.jruby/jruby "9.0.0.0.rc2" :exclusions [com.github.jnr/jffi
                                                com.github.jnr/jnr-x86asm
                                                joda-time]]
   ]
