@@ -60,10 +60,10 @@ Run with the example config:
 
 Run the following:
 
-  lein clean
-  mvn -f fake-s3-pom.xml clean initialize
-  lein uberimage -t unbounce/yopa:latest
-  sudo docker push unbounce/yopa:latest
+    lein clean
+    mvn -f fake-s3-pom.xml clean initialize
+    lein uberimage -t unbounce/yopa:latest
+    sudo docker push unbounce/yopa:latest
 
 
 ## Usage
