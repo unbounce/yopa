@@ -14,6 +14,23 @@
 (def ^:dynamic sns-endpoints (atom #{}))
 (def ^:dynamic sns-subscriptions (atom #{}))
 
+(def ^:private default-config
+  {:region "yopa-local"
+   :host "localhost"
+   :bind-address "0.0.0.0"
+   :messaging []
+   :storage {}
+   :sqs
+   {:port 47195
+    :https false}
+   :sns
+   {:port 47196
+    :https false}
+   :s3
+   {:port 47197
+    :https false
+    :data-dir "/tmp/yopa-fake-s3/"}})
+
 (defn- bail [reason]
   (throw (IllegalArgumentException. reason)))
 
@@ -76,7 +93,7 @@
       (init-endpoint endpoint-config))))
 
 (defn- generate-regions-override
-  [output-file region host sqs-port sns-port s3-port]
+  [output-file {:keys [host region] :as config}]
   (let [source (StreamSource.
                  (.getResourceAsStream RegionUtils
                    "/com/amazonaws/regions/regions.xml"))
@@ -88,10 +105,21 @@
                (TransformerFactory/newInstance) xsl)]
     (doto xslt
       (.setParameter "region" region)
-      (.setParameter "host" host)
-      (.setParameter "sqs-port" sqs-port)
-      (.setParameter "sns-port" sns-port)
-      (.setParameter "s3-port" s3-port)
+      (.setParameter "sqs-port" (get-in config [:sqs :port]))
+      (.setParameter "sqs-host" (get-in config [:sqs :host]
+                                        (str host ":"
+                                             (get-in config [:sqs :port]))))
+      (.setParameter "sqs-https" (get-in config [:sqs :https]))
+      (.setParameter "sns-port" (get-in config [:sns :port]))
+      (.setParameter "sns-host" (get-in config [:sns :host]
+                                        (str host ":"
+                                             (get-in config [:sqs :port]))))
+      (.setParameter "sns-https" (get-in config [:sns :https]))
+      (.setParameter "s3-port" (get-in config [:s3 :port]))
+      (.setParameter "s3-host" (get-in config [:s3 :host]
+                                       (str host ":"
+                                            (get-in config [:sqs :port]))))
+      (.setParameter "s3-https" (get-in config [:s3 :https]))
       (.transform source target))
 
     (log/info "Generated AWS regions override file: "
@@ -105,39 +133,39 @@
         (File.
           (str s3-data-dir bucket))))))
 
+(defn- rewrite-config-as-nested
+  [config]
+  (merge
+   {:bind-address (:bindAddress config)
+    :sqs
+    {:port (:sqsPort config)}
+    :sns
+    {:port (:snsPort config)}
+    :s3
+    {:port (:s3Port config)
+     :data-dir (:s3DataDir config)}}
+   config))
+
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))
-  (let [config (yaml/parse-string (slurp config-file))
-        region* (get config :region "yopa-local")
-        host (get config :host "localhost")
-        bind-address (get config :bindAddress "0.0.0.0")
-        sqs-port (get config :sqsPort 47195)
-        sns-port (get config :snsPort 47196)
-        s3-port (get config :s3Port 47197)
-        s3-data-dir (get config :s3DataDir "/tmp/yopa-fake-s3/")
-        messaging-config (get config :messaging [])
-        storage-config (get config :storage {})]
+  (let [config-from-file (yaml/parse-string (slurp config-file))
+        config (merge
+                default-config
+                (rewrite-config-as-nested config-from-file))]
 
-    (reset! region region*)
+    (reset! region (:region config))
 
-    (generate-regions-override
-      output-file
-      region*
-      host
-      sqs-port
-      sns-port
-      s3-port)
+    (println config)
+    (generate-regions-override output-file config)
 
-    (init-messaging messaging-config)
-    (init-storage s3-data-dir storage-config)
+    (init-messaging (:messaging config))
+    (init-storage (get-in config [:s3 :data-dir]) (:storage config))
 
-    {:region @region
-     :host host
-     :bind-address bind-address
-     :sqs-port sqs-port
-     :sns-port sns-port
-     :s3-port s3-port
-     :s3-data-dir s3-data-dir}))
+    (assoc (select-keys config [:region :host :bind-address])
+           :sqs-port (get-in config [:sqs :port])
+           :sns-port (get-in config [:sns :port])
+           :s3-port (get-in config [:s3 :port])
+           :s3-data-dir (get-in config [:s3 :data-dir]))))
 
 ; create and configure AWS entities
 

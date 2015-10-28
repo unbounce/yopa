@@ -3,14 +3,25 @@
 # optional configuration: the default values below are used if missing
 region: yopa-local
 host: localhost
-bindAddress: 0.0.0.0
-sqsPort: 47195
-snsPort: 47196
-s3Port: 47197
-s3DataDir: /tmp/yopa-fake-s3/
+bind-address: 0.0.0.0
+sqs:
+  port: 47195
+  # `https` and `host` are used for the regions override XML.
+  # This is useful if yopa is fronted by a proxy that offloads HTTPS.
+  https: true
+  # host: (defaults to top level `host`:`port`)
+  host: sqs.unbounce.xyz
+sns:
+  port: 47196
+  https: false
+s3:
+  port: 47197
+  https: false
+  data-dir: /tmp/yopa-fake-s3/
+
 
 messaging:
-  # creates a topic with an SQS and an HTTP subscription 
+  # creates a topic with an SQS and an HTTP subscription
   - sns://test-topic-with-subscriptions:
 
     # creates and subscribes a queue, with standard delivery
@@ -22,7 +33,7 @@ messaging:
     # subscribes an HTTP endpoint, with standard delivery
     - http://localhost:47196/request-logger
 
-  # creates a topic without subscription: messages sent to it will be logged and discarded 
+  # creates a topic without subscription: messages sent to it will be logged and discarded
   - sns://test-topic-without-subscription
 
   # creates a queue, not subscribed to any topic
