@@ -133,9 +133,16 @@
         (File.
           (str s3-data-dir bucket))))))
 
+(defn- deep-merge [& xs]
+  "Recursively merge, ignoring nil values"
+  (let [xs (remove nil? xs)]
+    (if (every? map? xs)
+      (apply merge-with deep-merge xs)
+      (last xs))))
+
 (defn- rewrite-config-as-nested
   [config]
-  (merge
+  (deep-merge
    {:bind-address (:bindAddress config)
     :sqs
     {:port (:sqsPort config)}
@@ -146,16 +153,18 @@
      :data-dir (:s3DataDir config)}}
    config))
 
+(defn- resolve-config
+  [config-file]
+  (let [config-from-file (yaml/parse-string (slurp config-file))]
+    (deep-merge
+     default-config
+     (rewrite-config-as-nested config-from-file))))
+
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))
-  (let [config-from-file (yaml/parse-string (slurp config-file))
-        config (merge
-                default-config
-                (rewrite-config-as-nested config-from-file))]
-
+  (let [config (resolve-config config-file)]
     (reset! region (:region config))
 
-    (println config)
     (generate-regions-override output-file config)
 
     (init-messaging (:messaging config))
