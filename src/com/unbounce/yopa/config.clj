@@ -107,18 +107,15 @@
       (.setParameter "region" region)
       (.setParameter "sqs-port" (get-in config [:sqs :port]))
       (.setParameter "sqs-host" (get-in config [:sqs :host]
-                                        (str host ":"
-                                             (get-in config [:sqs :port]))))
+                                        (str host ":" (get-in config [:sqs :port]))))
       (.setParameter "sqs-https" (get-in config [:sqs :https]))
       (.setParameter "sns-port" (get-in config [:sns :port]))
       (.setParameter "sns-host" (get-in config [:sns :host]
-                                        (str host ":"
-                                             (get-in config [:sqs :port]))))
+                                        (str host ":" (get-in config [:sns :port]))))
       (.setParameter "sns-https" (get-in config [:sns :https]))
       (.setParameter "s3-port" (get-in config [:s3 :port]))
       (.setParameter "s3-host" (get-in config [:s3 :host]
-                                       (str host ":"
-                                            (get-in config [:sqs :port]))))
+                                       (str host ":" (get-in config [:s3 :port]))))
       (.setParameter "s3-https" (get-in config [:s3 :https]))
       (.transform source target))
 
@@ -142,27 +139,34 @@
 
 (defn- rewrite-config-as-nested
   [config]
-  (deep-merge
-   {:bind-address (:bindAddress config)
-    :sqs
-    {:port (:sqsPort config)}
-    :sns
-    {:port (:snsPort config)}
-    :s3
-    {:port (:s3Port config)
-     :data-dir (:s3DataDir config)}}
-   config))
+  (let [rewritten-config
+        (deep-merge
+         {:bind-address (:bindAddress config)
+          :sqs
+          {:port (:sqsPort config)}
+          :sns
+          {:port (:snsPort config)}
+          :s3
+          {:port (:s3Port config)
+           :data-dir (:s3DataDir config)}}
+         config)]
+    (dissoc rewritten-config
+            :bindAddress
+            :sqsPort
+            :snsPort
+            :s3Port
+            :s3DataDir)))
 
-(defn- resolve-config
-  [config-file]
-  (let [config-from-file (yaml/parse-string (slurp config-file))]
-    (deep-merge
-     default-config
-     (rewrite-config-as-nested config-from-file))))
+(defn resolve-config
+  [config-from-file]
+  (deep-merge
+   default-config
+   (rewrite-config-as-nested config-from-file)))
 
 (defn init [config-file output-file]
   (log/info "Loading config file: " (.getAbsolutePath config-file))
-  (let [config (resolve-config config-file)]
+  (let [config-from-file (yaml/parse-string (slurp config-file))
+        config (resolve-config config-from-file)]
     (reset! region (:region config))
 
     (generate-regions-override output-file config)

@@ -8,9 +8,9 @@ sqs:
   port: 47195
   # `https` and `host` are used for the regions override XML.
   # This is useful if yopa is fronted by a proxy that offloads HTTPS.
-  https: true
+  # https: false
   # host: (defaults to top level `host`:`port`)
-  host: sqs.unbounce.xyz
+  # host: localhost:47195
 sns:
   port: 47196
   https: false
