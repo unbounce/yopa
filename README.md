@@ -80,14 +80,14 @@ The following examples assume all the default configuration parameters are used.
 
 ### Ruby
 
-    AWS.config(:access_key_id => 'x',
-               :secret_access_key => 'x',
-               :region => 'yopa-local',
-               :use_ssl => false,
-               :sqs_endpoint => 'localhost',
-               :sqs_port => 47195,
-               :sns_endpoint => 'localhost',
-               :sns_port => 47196)
+    Aws.config.update(:access_key_id => 'x',
+                      :secret_access_key => 'x',
+                      :region => 'yopa-local',
+                      :use_ssl => false,
+                      :sqs_endpoint => 'localhost',
+                      :sqs_port => 47195,
+                      :sns_endpoint => 'localhost',
+                      :sns_port => 47196)
 
 
 ### JVM
