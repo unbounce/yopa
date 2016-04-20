@@ -80,15 +80,42 @@ The following examples assume all the default configuration parameters are used.
 
 ### Ruby
 
-    AWS.config(:access_key_id => 'x',
-               :secret_access_key => 'x',
-               :region => 'yopa-local',
-               :use_ssl => false,
-               :sqs_endpoint => 'localhost',
-               :sqs_port => 47195,
-               :sns_endpoint => 'localhost',
-               :sns_port => 47196)
+    ```
+    # AWS SDK v1
+    AWS.config(
+      access_key_id: 'x',
+      secret_access_key: 'x',
+      region: 'us-west-1',
+      use_ssl: false,
+      s3_force_path_style: true,
+      s3_endpoint: 'localhost',
+      s3_port: 47197,
+      sqs_endpoint: 'localhost',
+      sqs_port: 47195,
+      sns_endpoint: 'localhost',
+      sns_port: 47196
+    )
+    ```
 
+    ```
+    # AWS SDK v2
+    Aws.config.update(
+      access_key_id: 'x',
+      secret_access_key: 'x',
+      region: 'us-west-1',
+      use_ssl: false,
+      s3: {
+        force_path_style: true,
+        endpoint: 'http://localhost:47197'
+      },
+      sqs: {
+        endpoint: 'http://localhost:47195'
+      },
+      sns: {
+        endpoint: 'http://localhost:47196'
+      }
+    )
+    ```
 
 ### JVM
 
