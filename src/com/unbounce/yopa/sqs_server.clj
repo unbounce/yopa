@@ -50,5 +50,4 @@
 
 (defn stop []
   (when @server
-    (.stopAndWait @server)
     (reset! server nil)))
