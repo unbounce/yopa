@@ -11,12 +11,21 @@
            com.typesafe.config.Config))
 
 (def config-string "{
+    \"akka.http.server.parsing.illegal-header-warnings\": \"off\",
+    \"akka\": {
+        \"loggers\": [\"akka.event.slf4j.Slf4jLogger\"],
+        \"loglevel\": \"DEBUG\",
+        \"logging-filter\": \"akka.event.slf4j.Slf4jLoggingFilter\",
+        \"log-dead-letters-during-shutdown\": false
+    }
+   \"akka.http.server.request-timeout\": \"21 s\",
+   \"akka.http.server.parsing.max-uri-length\": \"256k\",
    \"storage\":  {
       \"type\" = \"in-memory\"
    },
    \"node-address\":{
       \"protocol\":\"http\",
-      \"host\":\"localhost\",
+      \"host\":\"0.0.0.0\",
       \"port\":\"47195\",
       \"context-path\":\"\"
    },
@@ -24,7 +33,7 @@
       \"enabled\":\"true\",
       \"bind-port\":\"47195\",
       \"bind-hostname\":\"0.0.0.0\",
-      \"sqs-limits\":\"strict\"
+      \"sqs-limits\":\"relaxed\"
    }
 }")
 
