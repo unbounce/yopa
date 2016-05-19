@@ -37,6 +37,7 @@
    [circleci/clj-yaml "0.5.3"]
    [de.ubercode.clostache/clostache "1.4.0"]
 
+   [org.elasticmq/elasticmq-server_2.11 "0.8.8" :exclusions [joda-time]]
    [org.elasticmq/elasticmq-rest-sqs_2.11 "0.8.8" :exclusions [joda-time]]
    [amazonica "0.3.29" :exclusions [com.amazonaws/aws-java-sdk]]
    [com.amazonaws/aws-java-sdk-sqs ~aws-sdk-version :exclusions [joda-time]]
