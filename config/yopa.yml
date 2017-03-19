@@ -1,0 +1,21 @@
+# YOPA Configuration
+region: yopa-local
+host: localhost
+bind-address: 0.0.0.0
+sqs:
+  port: 47195
+sns:
+  port: 47196
+  https: false
+s3:
+  port: 47197
+  https: false
+  data-dir: /tmp/yopa-fake-s3/
+
+messaging:
+  - sns://test-topic
+  - sqs://test-queue
+
+storage:
+  buckets:
+    - test-bucket

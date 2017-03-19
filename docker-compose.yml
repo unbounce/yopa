@@ -1,0 +1,10 @@
+yopa:
+  image: yopa
+  hostname: yopa
+  ports:
+    - 47195:47195 # SQS
+    - 47196:47196 # SNS
+    - 47197:47197 # S3
+  volumes:
+    - ./tmp:/tmp
+    - ./config:/config
