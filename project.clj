@@ -12,7 +12,6 @@
 
   :main com.unbounce.yopa.core
   :aot [com.unbounce.yopa.core]
-  :jvm-opts ["-XX:MaxPermSize=256m"]
 
   :uberjar-merge-with {#"\.conf$" [slurp str spit]}
 
@@ -53,8 +52,7 @@
    [ring/ring-core ~ring-version]
    [ring/ring-jetty-adapter ~ring-version]
 
-   [org.jruby/jruby "9.0.0.0" :exclusions [com.github.jnr/jffi
-                                           com.github.jnr/jnr-x86asm
+   [org.jruby/jruby "9.0.0.0" :exclusions [com.github.jnr/jnr-x86asm
                                            joda-time]]
   ]
 
