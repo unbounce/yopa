@@ -1,0 +1,8 @@
+yopa:
+  image: yopa
+  ports:
+    - 47195:47195 #sqs
+    - 47196:47196 #sns
+  volumes:
+    - ./tmp:/tmp
+    - ./config:/config
