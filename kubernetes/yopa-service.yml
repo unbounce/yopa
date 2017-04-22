@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yopa-service
+spec:
+  selector:
+    app: yopa
+  ports:
+    - name: sqs
+      protocol: TCP
+      port: 47195
+    - name: sns
+      protocol: TCP
+      port: 47196
+    - name: s3
+      protocol: TCP
+      port: 47197

@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: yopa-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: yopa
+    spec:
+      containers:
+        - name: yopa
+          image: unbounce/yopa:local
+          args: ["-c", "/tmp/yopa-config/yopa-config.yml"]
+          volumeMounts:
+            - name: yopa-config-volume
+              mountPath: /tmp/yopa-config
+          imagePullPolicy: IfNotPresent
+      volumes:
+        - name: yopa-config-volume
+          configMap:
+            name: yopa-config
