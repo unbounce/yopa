@@ -26,8 +26,8 @@
 (defn run-on-s3 [f]
   (let [{:keys [host s3-port]} @config]
     (aws/with-credential ["x" "x" (str "http://" host ":" s3-port)]
-      (s3/set-s3client-options :path-style-access true)
-      (f))))
+      (aws/with-client-config {:path-style-access-enabled true}
+        (f)))))
 
 (defn make-arn [service name]
   (let [region (:region @config)]
