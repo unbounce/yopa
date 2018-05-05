@@ -15,7 +15,7 @@ It allows developers to code without being connected to the net.
 <br/>
 [![Clojars Project](http://clojars.org/com.unbounce/yopa/latest-version.svg)](http://clojars.org/com.unbounce/yopa)
 
-Also available as a [Docker image](https://registry.hub.docker.com/u/unbounce/yopa/).
+Also available as a [Docker image](https://hub.docker.com/r/unbounce/yopa/).
 
 # Features
 
@@ -60,11 +60,10 @@ Run with the example config:
 
 Run the following:
 
-    lein clean
     mvn -f fake-s3-pom.xml clean initialize
-    lein uberimage -t unbounce/yopa:latest
-    sudo docker push unbounce/yopa:latest
-
+    lein uberjar
+    docker build -t unbounce/yopa:latest
+    docker push unbounce/yopa:latest
 
 ## Usage
 

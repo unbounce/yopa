@@ -16,6 +16,8 @@
 
   :uberjar-merge-with {#"\.conf$" [slurp str spit]}
 
+  :uberjar-name "uberjar.jar"
+
   :manifest {"Implementation-Version" ~build-meta}
 
   :resource-paths ["resources" "rubygems"]
@@ -56,11 +58,4 @@
    [org.jruby/jruby "9.0.0.0" :exclusions [com.github.jnr/jffi
                                            com.github.jnr/jnr-x86asm
                                            joda-time]]
-  ]
-
-  :repositories
-  [
-   ["softwaremill-releases" "https://nexus.softwaremill.com/content/repositories/releases"]
-   ["spray-releases"        "http://repo.spray.io"]
-  ]
-)
+   ])
