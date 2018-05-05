@@ -94,9 +94,7 @@
 
 (defn- generate-regions-override
   [output-file {:keys [host region] :as config}]
-  (let [source (StreamSource.
-                 (.getResourceAsStream RegionUtils
-                   "/com/amazonaws/regions/regions.xml"))
+  (let [source (StreamSource. (io/input-stream (io/resource "aws_regions.xml")))
         target (StreamResult. output-file)
         xsl (StreamSource.
               (io/input-stream
