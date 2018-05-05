@@ -23,7 +23,7 @@
   [host bind-address port data-dir]
   (str
     "require 'fakes3' \n"
-    "store = FakeS3::FileStore.new('" data-dir "') \n"
+    "store = FakeS3::FileStore.new('" data-dir "', false) \n"
     "webrick_config = { :BindAddress => '" bind-address "'"
                      ", :Port        => " port
                      ", :AccessLog   => [] } \n"
