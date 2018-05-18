@@ -130,8 +130,9 @@
         (File.
           (str s3-data-dir bucket))))))
 
-(defn- deep-merge [& xs]
+(defn- deep-merge
   "Recursively merge, ignoring nil values"
+  [& xs]
   (let [xs (remove nil? xs)]
     (if (every? map? xs)
       (apply merge-with deep-merge xs)
