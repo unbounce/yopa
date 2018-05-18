@@ -24,6 +24,9 @@
   :profiles {:dev {:plugins [[lein-kibit "0.1.6"]
                              [jonase/eastwood "0.2.5"]]}}
 
+  ;; wrong-arity conflicts with amazonica :(
+  :eastwood {:exclude-linters [:wrong-arity]}
+
   :dependencies
   [
    [org.clojure/clojure "1.8.0"]
